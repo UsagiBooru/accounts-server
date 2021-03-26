@@ -15,12 +15,13 @@ import (
 	"net/http"
 
 	openapi "github.com/UsagiBooru/accounts-server/gen"
+	impl "github.com/UsagiBooru/accounts-server/impl"
 )
 
 func main() {
 	log.Printf("Server started")
 
-	AccountsApiService := openapi.NewAccountsApiService()
+	AccountsApiService := impl.NewAccountsApiImplService()
 	AccountsApiController := openapi.NewAccountsApiController(AccountsApiService)
 
 	MutesApiService := openapi.NewMutesApiService()
