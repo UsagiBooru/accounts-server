@@ -27,6 +27,43 @@ func NewMutesApiService() MutesApiServicer {
 	return &MutesApiService{}
 }
 
+// AddMute - Add mute
+func (s *MutesApiService) AddMute(ctx context.Context, accountID int32, muteStruct MuteStruct) (ImplResponse, error) {
+	// TODO - update AddMute with the required logic for this service method.
+	// Add api_mutes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	//TODO: Uncomment the next line to return response Response(200, MuteStruct{}) or use other options such as http.Ok ...
+	//return Response(200, MuteStruct{}), nil
+
+	//TODO: Uncomment the next line to return response Response(400, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(400, GeneralMessageResponse{}), nil
+
+	//TODO: Uncomment the next line to return response Response(403, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(403, GeneralMessageResponse{}), nil
+
+	//TODO: Uncomment the next line to return response Response(429, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(429, GeneralMessageResponse{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("AddMute method not implemented")
+}
+
+// DeleteMute - Delete mute
+func (s *MutesApiService) DeleteMute(ctx context.Context, accountID int32, muteID int32) (ImplResponse, error) {
+	// TODO - update DeleteMute with the required logic for this service method.
+	// Add api_mutes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	//TODO: Uncomment the next line to return response Response(204, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(204, GeneralMessageResponse{}), nil
+
+	//TODO: Uncomment the next line to return response Response(403, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(403, GeneralMessageResponse{}), nil
+
+	//TODO: Uncomment the next line to return response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(404, GeneralMessageResponse{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("DeleteMute method not implemented")
+}
+
 // GetMute - Get mute
 func (s *MutesApiService) GetMute(ctx context.Context, accountID int32, muteID int32) (ImplResponse, error) {
 	// TODO - update GetMute with the required logic for this service method.

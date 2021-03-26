@@ -21,9 +21,7 @@ import (
 // The AccountsApiRouter implementation should parse necessary information from the http request, 
 // pass the data to a AccountsApiServicer to perform the required actions, then write the service results to the http response.
 type AccountsApiRouter interface { 
-	AddMute(http.ResponseWriter, *http.Request)
 	DeleteAccount(http.ResponseWriter, *http.Request)
-	DeleteMute(http.ResponseWriter, *http.Request)
 	EditAccount(http.ResponseWriter, *http.Request)
 	GetAccount(http.ResponseWriter, *http.Request)
 	GetAccountMe(http.ResponseWriter, *http.Request)
@@ -34,6 +32,8 @@ type AccountsApiRouter interface {
 // The MutesApiRouter implementation should parse necessary information from the http request, 
 // pass the data to a MutesApiServicer to perform the required actions, then write the service results to the http response.
 type MutesApiRouter interface { 
+	AddMute(http.ResponseWriter, *http.Request)
+	DeleteMute(http.ResponseWriter, *http.Request)
 	GetMute(http.ResponseWriter, *http.Request)
 	GetMutes(http.ResponseWriter, *http.Request)
 }
@@ -75,9 +75,7 @@ type TimelineApiRouter interface {
 // while the service implementation can ignored with the .openapi-generator-ignore file 
 // and updated with the logic required for the API.
 type AccountsApiServicer interface { 
-	AddMute(context.Context, int32, MuteStruct) (ImplResponse, error)
 	DeleteAccount(context.Context, int32, string) (ImplResponse, error)
-	DeleteMute(context.Context, int32, int32) (ImplResponse, error)
 	EditAccount(context.Context, int32, AccountStruct) (ImplResponse, error)
 	GetAccount(context.Context, int32) (ImplResponse, error)
 	GetAccountMe(context.Context) (ImplResponse, error)
@@ -91,6 +89,8 @@ type AccountsApiServicer interface {
 // while the service implementation can ignored with the .openapi-generator-ignore file 
 // and updated with the logic required for the API.
 type MutesApiServicer interface { 
+	AddMute(context.Context, int32, MuteStruct) (ImplResponse, error)
+	DeleteMute(context.Context, int32, int32) (ImplResponse, error)
 	GetMute(context.Context, int32, int32) (ImplResponse, error)
 	GetMutes(context.Context, int32) (ImplResponse, error)
 }

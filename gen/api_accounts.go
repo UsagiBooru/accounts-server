@@ -32,22 +32,10 @@ func NewAccountsApiController(s AccountsApiServicer) Router {
 func (c *AccountsApiController) Routes() Routes {
 	return Routes{ 
 		{
-			"AddMute",
-			strings.ToUpper("Post"),
-			"/accounts/{accountID}/mutes",
-			c.AddMute,
-		},
-		{
 			"DeleteAccount",
 			strings.ToUpper("Delete"),
 			"/accounts/{accountID}",
 			c.DeleteAccount,
-		},
-		{
-			"DeleteMute",
-			strings.ToUpper("Delete"),
-			"/accounts/{accountID}/mutes/{muteID}",
-			c.DeleteMute,
 		},
 		{
 			"EditAccount",
@@ -82,32 +70,6 @@ func (c *AccountsApiController) Routes() Routes {
 	}
 }
 
-// AddMute - Add mute
-func (c *AccountsApiController) AddMute(w http.ResponseWriter, r *http.Request) { 
-	params := mux.Vars(r)
-	accountID, err := parseInt32Parameter(params["accountID"])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	muteStruct := &MuteStruct{}
-	if err := json.NewDecoder(r.Body).Decode(&muteStruct); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	result, err := c.service.AddMute(r.Context(), accountID, *muteStruct)
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
-}
-
 // DeleteAccount - Delete account info
 func (c *AccountsApiController) DeleteAccount(w http.ResponseWriter, r *http.Request) { 
 	params := mux.Vars(r)
@@ -120,32 +82,6 @@ func (c *AccountsApiController) DeleteAccount(w http.ResponseWriter, r *http.Req
 	
 	password := query.Get("password")
 	result, err := c.service.DeleteAccount(r.Context(), accountID, password)
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
-}
-
-// DeleteMute - Delete mute
-func (c *AccountsApiController) DeleteMute(w http.ResponseWriter, r *http.Request) { 
-	params := mux.Vars(r)
-	accountID, err := parseInt32Parameter(params["accountID"])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	muteID, err := parseInt32Parameter(params["muteID"])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	result, err := c.service.DeleteMute(r.Context(), accountID, muteID)
 	//If an error occured, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)

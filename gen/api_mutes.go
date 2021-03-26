@@ -32,6 +32,18 @@ func NewMutesApiController(s MutesApiServicer) Router {
 func (c *MutesApiController) Routes() Routes {
 	return Routes{ 
 		{
+			"AddMute",
+			strings.ToUpper("Post"),
+			"/accounts/{accountID}/mutes",
+			c.AddMute,
+		},
+		{
+			"DeleteMute",
+			strings.ToUpper("Delete"),
+			"/accounts/{accountID}/mutes/{muteID}",
+			c.DeleteMute,
+		},
+		{
 			"GetMute",
 			strings.ToUpper("Get"),
 			"/accounts/{accountID}/mutes/{muteID}",
@@ -44,6 +56,58 @@ func (c *MutesApiController) Routes() Routes {
 			c.GetMutes,
 		},
 	}
+}
+
+// AddMute - Add mute
+func (c *MutesApiController) AddMute(w http.ResponseWriter, r *http.Request) { 
+	params := mux.Vars(r)
+	accountID, err := parseInt32Parameter(params["accountID"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	
+	muteStruct := &MuteStruct{}
+	if err := json.NewDecoder(r.Body).Decode(&muteStruct); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	
+	result, err := c.service.AddMute(r.Context(), accountID, *muteStruct)
+	//If an error occured, encode the error with the status code
+	if err != nil {
+		EncodeJSONResponse(err.Error(), &result.Code, w)
+		return
+	}
+	//If no error, encode the body and the result code
+	EncodeJSONResponse(result.Body, &result.Code, w)
+	
+}
+
+// DeleteMute - Delete mute
+func (c *MutesApiController) DeleteMute(w http.ResponseWriter, r *http.Request) { 
+	params := mux.Vars(r)
+	accountID, err := parseInt32Parameter(params["accountID"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	
+	muteID, err := parseInt32Parameter(params["muteID"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	
+	result, err := c.service.DeleteMute(r.Context(), accountID, muteID)
+	//If an error occured, encode the error with the status code
+	if err != nil {
+		EncodeJSONResponse(err.Error(), &result.Code, w)
+		return
+	}
+	//If no error, encode the body and the result code
+	EncodeJSONResponse(result.Body, &result.Code, w)
+	
 }
 
 // GetMute - Get mute

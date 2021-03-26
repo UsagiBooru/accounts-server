@@ -21,6 +21,7 @@ security:
 - Authorization: []
 tags:
 - name: accounts
+- name: mutes
 - name: mylist
 - name: notify
 - name: timeline
@@ -1076,7 +1077,7 @@ paths:
           description: Too Many Requests
       summary: Add mute
       tags:
-      - accounts
+      - mutes
   /accounts/{accountID}/mutes/{muteID}:
     delete:
       description: 指定したミュート情報を削除します
@@ -1119,7 +1120,7 @@ paths:
           description: Not Found
       summary: Delete mute
       tags:
-      - accounts
+      - mutes
     get:
       description: 指定したミュート情報を取得します
       operationId: getMute
