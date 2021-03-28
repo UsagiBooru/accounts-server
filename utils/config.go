@@ -16,20 +16,18 @@ type ConfigList struct {
 	JwtSecret   string
 }
 
-var Config ConfigList
-
-func GetConfig() {
+func GetConfig() ConfigList {
 	// Load ini
 	cfg, err := ini.Load("config.ini")
 	if err != nil {
-		log.Fatalf("Config.ini could not be loaded.")
+		log.Fatalf("config.ini could not be loaded.")
 	}
 
 	// Parse to ConfigList struct
 	mongoSection := cfg.Section("MongoDB")
 	elasticSection := cfg.Section("ElasticSearch")
 	secretSection := cfg.Section("Secret")
-	Config = ConfigList{
+	return ConfigList{
 		MongoHost:   mongoSection.Key("host").String(),
 		MongoUser:   mongoSection.Key("user").String(),
 		MongoPass:   mongoSection.Key("pass").String(),
