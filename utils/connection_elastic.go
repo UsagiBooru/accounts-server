@@ -7,9 +7,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 )
 
-var Es elasticsearch.Client
-
-func GetElasticSearchConnection(host, user, pass string) {
+func NewElasticSearchClient(host, user, pass string) *elasticsearch.Client {
 	cfg := elasticsearch.Config{
 		Addresses: strings.Split(host, ","),
 		Username:  user,
@@ -23,4 +21,5 @@ func GetElasticSearchConnection(host, user, pass string) {
 	if err != nil {
 		log.Fatalf("Get elasticsearch info failed: %s", err)
 	}
+	return Es
 }
