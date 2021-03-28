@@ -1,20 +1,24 @@
 package utils
 
 import (
+	"context"
 	"log"
+	"time"
 
-	"github.com/kamva/mgm/v3"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetMongoDBConnection(host, user, pass string) {
+func NewMongoDBClient(host, user, pass string) *mongo.Client {
 	// Initalize MongoDB driver
-	err := mgm.SetDefaultConfig(
-		nil,
-		"mgm_lab",
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(
+		ctx,
 		options.Client().ApplyURI("mongodb://"+user+":"+pass+"@"+host),
 	)
 	if err != nil {
 		log.Fatalf("Connect to mongodb failed: %s", err)
 	}
+	return client
 }
