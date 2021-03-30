@@ -9,6 +9,8 @@ My references to write these codes. For anyone, who want to know more about my c
 ### Note
 I chose go net/http generator using [openapi-generator-cli](https://github.com/OpenAPITools/openapi-generator).
 Since I'm new to golang, and didn't want do do myself many.
+### Command
+```openapi-generator-cli generate -i accounts.v1.yaml -g go-server --additional-properties=packageName=gen```
 
 ## REST API best practice
 - [RESTful API設計のベストプラクティス　-Web API the Good Partsまとめ-](https://www.mushroom-blog.com/420/)
