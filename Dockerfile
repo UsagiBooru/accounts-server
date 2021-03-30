@@ -6,9 +6,9 @@ COPY main.go .
 ENV CGO_ENABLED=0
 RUN go get -d -v ./...
 
-RUN go build -a -installsuffix cgo -o openapi .
+RUN go build -a -installsuffix cgo -o gen .
 
 FROM scratch AS runtime
-COPY --from=build /go/src/openapi ./
+COPY --from=build /go/src/gen ./
 EXPOSE 8080/tcp
-ENTRYPOINT ["./openapi"]
+ENTRYPOINT ["./gen"]

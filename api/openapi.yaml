@@ -26,6 +26,32 @@ tags:
 - name: notify
 - name: timeline
 paths:
+  /accounts:
+    post:
+      description: 新しいアカウントを作成します
+      operationId: createAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountStruct'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountStruct'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Bad Request
+      security: []
+      summary: Create account
+      tags:
+      - accounts
   /accounts/{accountID}:
     delete:
       description: |-
@@ -42,13 +68,13 @@ paths:
           type: integer
         style: simple
       - description: 削除確認用パスワード
-        explode: true
-        in: query
+        explode: false
+        in: header
         name: password
         required: false
         schema:
           type: string
-        style: form
+        style: simple
       responses:
         "204":
           content:
@@ -1286,6 +1312,7 @@ components:
           canComment: true
         apiKey: DUMMY_API_KEY
         apiSeq: 1
+        mail: dsgamer777@gmail.com
         ipfs:
           pinEnabled: false
           gatewayUrl: https://cloudflare-ipfs.com
@@ -1353,6 +1380,13 @@ components:
           maxLength: 50
           minLength: 8
           type: string
+        mail:
+          description: ユーザーのメールアドレス(連絡用)
+          example: dsgamer777@gmail.com
+          format: email
+          maxLength: 150
+          minLength: 1
+          type: string
         totpEnabled:
           default: false
           description: TOTPが有効かが入ります
@@ -1393,6 +1427,7 @@ components:
           permission: 9
           password: kafuuch1n0
           oldPassword: h0t0c0c0a
+          mail: dsgamer777@gmail.com
           totpEnabled: false
           name: お窓
           description: 開発者さん
@@ -1428,6 +1463,7 @@ components:
           permission: 0
           password: h0t0c0c0a
           oldPassword: kafuuch1n0
+          mail: dsgamer777@gmail.com
           totpEnabled: false
           name: 香風智乃
           description: ラビットハウスの一人娘。クールな性格だがココアのことは嫌いじゃない…!? コーヒーに詳しいしっかり者。

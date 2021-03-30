@@ -13,7 +13,7 @@ To see how to make this your own, look here:
 [README](https://openapi-generator.tech)
 
 - API version: 2.0
-- Build date: 2021-03-26T15:25:18.799+09:00[Asia/Tokyo]
+- Build date: 2021-03-30T23:59:16.247+09:00[Asia/Tokyo]
 For more information, please visit [https://twitter.com/shallow_omado](https://twitter.com/shallow_omado)
 
 
@@ -26,12 +26,12 @@ go run main.go
 
 To run the server in a docker container
 ```
-docker build --network=host -t openapi .
+docker build --network=host -t gen .
 ```
 
 Once image is built use
 ```
-docker run --rm -it openapi 
+docker run --rm -it gen 
 ```
 
 
