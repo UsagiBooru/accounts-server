@@ -16,10 +16,11 @@ import (
 
 	openapi "github.com/UsagiBooru/accounts-server/gen"
 	impl "github.com/UsagiBooru/accounts-server/impl"
+	"github.com/UsagiBooru/accounts-server/utils"
 )
 
 func main() {
-	log.Printf("Server started")
+	utils.Info("Server started")
 
 	AccountsApiService := impl.NewAccountsApiImplService()
 	AccountsApiController := openapi.NewAccountsApiController(AccountsApiService)

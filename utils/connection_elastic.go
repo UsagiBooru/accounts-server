@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"log"
+	"os"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -12,7 +12,6 @@ func NewElasticSearchClient(host, user, pass string) *elasticsearch.Client {
 	for _, address := range strings.Split(host, ",") {
 		addresses = append(addresses, "http://"+address)
 	}
-	log.Print(addresses)
 	var cfg elasticsearch.Config
 	if user == "" && pass == "" {
 		cfg = elasticsearch.Config{
@@ -27,12 +26,14 @@ func NewElasticSearchClient(host, user, pass string) *elasticsearch.Client {
 	}
 	Es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
-		log.Fatalf("Connect to elasticsearch failed: %s", err)
+		Error("Connect to elasticsearch failed: " + err.Error())
+		os.Exit(1)
 	}
 	_, err = Es.Info()
 	if err != nil {
-		log.Fatalf("Get elasticsearch info failed: %s", err)
+		Error("Get elasticsearch info failed: " + err.Error())
+		os.Exit(1)
 	}
-	log.Print("Elasticsearch client created")
+	Debug("Elasticsearch client created")
 	return Es
 }

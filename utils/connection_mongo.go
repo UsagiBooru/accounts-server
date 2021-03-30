@@ -2,7 +2,7 @@ package utils
 
 import (
 	"context"
-	"log"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,7 +18,9 @@ func NewMongoDBClient(host, user, pass string) *mongo.Client {
 		options.Client().ApplyURI("mongodb://"+user+":"+pass+"@"+host),
 	)
 	if err != nil {
-		log.Fatalf("Connect to mongodb failed: %s", err)
+		Error("Connect to mongodb failed: " + err.Error())
+		os.Exit(1)
 	}
+	Debug("MongoDB client created.")
 	return client
 }

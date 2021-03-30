@@ -18,6 +18,7 @@ func init() {
 		}
 		logger.Hooks.Add(logstashHook)
 	*/
+	logger.SetLevel(logrus.DebugLevel)
 	Log = logger
 }
 
