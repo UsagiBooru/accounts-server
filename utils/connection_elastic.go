@@ -8,10 +8,22 @@ import (
 )
 
 func NewElasticSearchClient(host, user, pass string) *elasticsearch.Client {
-	cfg := elasticsearch.Config{
-		Addresses: strings.Split(host, ","),
-		Username:  user,
-		Password:  pass,
+	addresses := []string{}
+	for _, address := range strings.Split(host, ",") {
+		addresses = append(addresses, "http://"+address)
+	}
+	log.Print(addresses)
+	var cfg elasticsearch.Config
+	if user == "" && pass == "" {
+		cfg = elasticsearch.Config{
+			Addresses: addresses,
+		}
+	} else {
+		cfg = elasticsearch.Config{
+			Addresses: addresses,
+			Username:  user,
+			Password:  pass,
+		}
 	}
 	Es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
@@ -21,5 +33,6 @@ func NewElasticSearchClient(host, user, pass string) *elasticsearch.Client {
 	if err != nil {
 		log.Fatalf("Get elasticsearch info failed: %s", err)
 	}
+	log.Print("Elasticsearch client created")
 	return Es
 }
