@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	openapi "github.com/UsagiBooru/accounts-server/gen"
+	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/utils"
 	"github.com/UsagiBooru/accounts-server/utils/mongo_models"
 	"github.com/elastic/go-elasticsearch/v7"
@@ -14,22 +14,22 @@ import (
 )
 
 type AccountsApiImplService struct {
-	openapi.AccountsApiService
+	gen.AccountsApiService
 	es *elasticsearch.Client
 	md *mongo.Client
 }
 
-func NewAccountsApiImplService() openapi.AccountsApiServicer {
+func NewAccountsApiImplService() gen.AccountsApiServicer {
 	conf := utils.GetConfig()
 	return &AccountsApiImplService{
-		AccountsApiService: openapi.AccountsApiService{},
+		AccountsApiService: gen.AccountsApiService{},
 		es:                 utils.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
 		md:                 utils.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
 	}
 }
 
 // GetAccount - Get account info
-func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32) (openapi.ImplResponse, error) {
+func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32) (gen.ImplResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	// TODO - update GetAccount with the required logic for this service method.
@@ -44,7 +44,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	// s.es.hogehoge で ElasticSearchが呼べる?
 	// s.md.hogehoge で MongoDBが呼べる?
 	user := mongo_models.MongoAccount{
-		AccountStruct: openapi.AccountStruct{
+		AccountStruct: gen.AccountStruct{
 			AccountID: 1,
 			DisplayID: "domao",
 		},
@@ -56,7 +56,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	_, err := col.InsertOne(ctx, user_doc)
 	if err != nil {
 		fmt.Println(err)
-		return openapi.Response(500, openapi.GeneralMessageResponse{Message: "Failed"}), nil
+		return gen.Response(500, gen.GeneralMessageResponse{Message: "Failed"}), nil
 	}
-	return openapi.Response(200, openapi.AccountStruct{}), nil
+	return gen.Response(200, gen.AccountStruct{}), nil
 }

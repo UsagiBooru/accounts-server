@@ -7,14 +7,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	openapi "github.com/UsagiBooru/accounts-server/gen"
-	impl "github.com/UsagiBooru/accounts-server/impl"
+	"github.com/UsagiBooru/accounts-server/gen"
+	"github.com/UsagiBooru/accounts-server/impl"
 )
 
 func GetAccountsServer() *httptest.Server {
 	AccountsApiService := impl.NewAccountsApiImplService()
-	AccountsApiController := openapi.NewAccountsApiController(AccountsApiService)
-	router := openapi.NewRouter(AccountsApiController)
+	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
+	router := gen.NewRouter(AccountsApiController)
 	return httptest.NewServer(router)
 }
 
