@@ -35,8 +35,15 @@ func NewAccountsApiImplService() gen.AccountsApiServicer {
 // CreateAccount - Create account
 func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruct gen.AccountStruct) (gen.ImplResponse, error) {
 	// Timeout of this method is 3 seconds
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
+
+	v := ctx.Value("user-id")
+	token, ok := v.(string)
+	utils.Debug("User id is" + string(token))
+	if !ok {
+		return gen.Response(500, gen.AccountStruct{}), nil
+	}
 
 	// Validate request fields
 	if resp := utils.ValidateRequiredFields(

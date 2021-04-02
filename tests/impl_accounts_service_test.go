@@ -18,7 +18,7 @@ import (
 func GetAccountsServer() *httptest.Server {
 	AccountsApiService := impl.NewAccountsApiImplService()
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
-	router := gen.NewRouter(AccountsApiController)
+	router := utils.NewRouterWithInject(AccountsApiController)
 	return httptest.NewServer(router)
 }
 

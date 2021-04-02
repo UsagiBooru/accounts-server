@@ -37,7 +37,7 @@ func main() {
 	TimelineApiService := gen.NewTimelineApiService()
 	TimelineApiController := gen.NewTimelineApiController(TimelineApiService)
 
-	router := gen.NewRouter(AccountsApiController, MutesApiController, MylistApiController, NotifyApiController, TimelineApiController)
+	router := utils.NewRouterWithInject(AccountsApiController, MutesApiController, MylistApiController, NotifyApiController, TimelineApiController)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
