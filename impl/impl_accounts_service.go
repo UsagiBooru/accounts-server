@@ -219,16 +219,42 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 
 // GetAccount - Get account info
 func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32) (gen.ImplResponse, error) {
-	// TODO - update GetAccount with the required logic for this service method.
-	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return response Response(200, AccountStruct{}) or use other options such as http.Ok ...
-	//return Response(200, AccountStruct{}), nil
-
-	//TODO: Uncomment the next line to return response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return Response(404, GeneralMessageResponse{}), nil
-
-	// s.es.hogehoge で ElasticSearchが呼べる?
-	// s.md.hogehoge で MongoDBが呼べる?
-	return gen.Response(http.StatusNotImplemented, nil), errors.New("GetAccount method not implemented")
+	// Find target account
+	col := s.md.Database("accounts").Collection("users")
+	filter := bson.M{"accountID": accountID}
+	var account gen.AccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
+		utils.Debug(err.Error())
+		return gen.Response(404, gen.GeneralMessageResponse{Message: "Specified account does not exist."}), nil
+	}
+	// Find inviter account
+	col = s.md.Database("accounts").Collection("users")
+	filter = bson.M{"accountID": account.Inviter.AccountID}
+	var inviter gen.AccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
+		utils.Debug(err.Error())
+		return gen.Response(500, gen.GeneralMessageResponse{Message: "Internal server error."}), nil
+	}
+	// Create response
+	accountResp := gen.AccountStruct{
+		AccountID:   account.AccountID,
+		DisplayID:   account.DisplayID,
+		Permission:  account.Permission,
+		Name:        account.Name,
+		Description: account.Description,
+		Favorite:    account.Favorite,
+		Access: gen.AccountStructAccess{
+			CanInvite:      account.Access.CanInvite,
+			CanLike:        account.Access.CanLike,
+			CanComment:     account.Access.CanComment,
+			CanCreatePost:  account.Access.CanCreatePost,
+			CanEditPost:    account.Access.CanEditPost,
+			CanApprovePost: account.Access.CanApprovePost,
+		},
+		Inviter: gen.LightAccountStruct{
+			AccountID: account.Inviter.AccountID,
+			Name:      inviter.Name,
+		},
+	}
+	return gen.Response(200, accountResp), nil
 }

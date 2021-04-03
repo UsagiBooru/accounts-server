@@ -65,6 +65,6 @@ func TestGetAccount(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/accounts/1", nil)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
-	// t.Log(rec.Body)
+	t.Log(rec.Body)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
