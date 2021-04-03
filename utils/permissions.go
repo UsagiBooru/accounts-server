@@ -2,6 +2,6 @@ package utils
 
 const (
 	PermissionAdmin     = 9
-	PermissionModelator = 5
+	PermissionModerator = 5
 	PermissionUser      = 0
 )

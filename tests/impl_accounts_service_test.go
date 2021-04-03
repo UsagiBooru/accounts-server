@@ -31,7 +31,7 @@ func SetAdminUserHeader(req *http.Request) *http.Request {
 
 func SetModUserHeader(req *http.Request) *http.Request {
 	req.Header.Set("x-consumer-user-id", "2")
-	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionModelator))
+	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionModerator))
 	return req
 }
 
