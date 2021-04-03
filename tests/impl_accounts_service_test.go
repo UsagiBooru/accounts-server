@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,24 @@ func GetAccountsServer() *httptest.Server {
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
 	router := utils.NewRouterWithInject(AccountsApiController)
 	return httptest.NewServer(router)
+}
+
+func SetAdminUserHeader(req *http.Request) *http.Request {
+	req.Header.Set("x-consumer-user-id", "1")
+	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionAdmin))
+	return req
+}
+
+func SetModUserHeader(req *http.Request) *http.Request {
+	req.Header.Set("x-consumer-user-id", "2")
+	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionModelator))
+	return req
+}
+
+func SetNormalUserHeader(req *http.Request) *http.Request {
+	req.Header.Set("x-consumer-user-id", "3")
+	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionUser))
+	return req
 }
 
 func TestMain(m *testing.M) {
