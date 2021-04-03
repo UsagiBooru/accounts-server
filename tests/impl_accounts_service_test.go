@@ -52,6 +52,16 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+func TestGetAccount(t *testing.T) {
+	s := GetAccountsServer()
+	defer s.Close()
+	req := httptest.NewRequest(http.MethodGet, "/accounts/1", nil)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
 func TestCreateAccount(t *testing.T) {
 	s := GetAccountsServer()
 	defer s.Close()
@@ -79,10 +89,22 @@ func TestCreateAccount(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestGetAccount(t *testing.T) {
+func TestEditAccount(t *testing.T) {
 	s := GetAccountsServer()
 	defer s.Close()
-	req := httptest.NewRequest(http.MethodGet, "/accounts/1", nil)
+	editAccount := gen.AccountStruct{
+		Name: "デバッグアカウント2",
+	}
+	req_json, err := json.Marshal(editAccount)
+	if err != nil {
+		log.Fatal("Convert struct to json failed.")
+	}
+	req := httptest.NewRequest(
+		http.MethodPatch,
+		"/accounts/1",
+		bytes.NewBuffer(req_json),
+	)
+	req = SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)

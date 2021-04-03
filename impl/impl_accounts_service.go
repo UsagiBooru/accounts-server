@@ -31,6 +31,48 @@ func NewAccountsApiImplService() gen.AccountsApiServicer {
 	}
 }
 
+// GetAccount - Get account info
+func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32) (gen.ImplResponse, error) {
+	// Find target account
+	col := s.md.Database("accounts").Collection("users")
+	filter := bson.M{"accountID": accountID}
+	var account gen.AccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
+		utils.Debug(err.Error())
+		return gen.Response(404, gen.GeneralMessageResponse{Message: utils.MessageNotFoundError}), nil
+	}
+	// Find inviter account
+	col = s.md.Database("accounts").Collection("users")
+	filter = bson.M{"accountID": account.Inviter.AccountID}
+	var inviter gen.AccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
+		utils.Debug(err.Error())
+		return gen.Response(500, gen.GeneralMessageResponse{Message: utils.MessageInternalError}), nil
+	}
+	// Create response
+	accountResp := gen.AccountStruct{
+		AccountID:   account.AccountID,
+		DisplayID:   account.DisplayID,
+		Permission:  account.Permission,
+		Name:        account.Name,
+		Description: account.Description,
+		Favorite:    account.Favorite,
+		Access: gen.AccountStructAccess{
+			CanInvite:      account.Access.CanInvite,
+			CanLike:        account.Access.CanLike,
+			CanComment:     account.Access.CanComment,
+			CanCreatePost:  account.Access.CanCreatePost,
+			CanEditPost:    account.Access.CanEditPost,
+			CanApprovePost: account.Access.CanApprovePost,
+		},
+		Inviter: gen.LightAccountStruct{
+			AccountID: account.Inviter.AccountID,
+			Name:      inviter.Name,
+		},
+	}
+	return gen.Response(200, accountResp), nil
+}
+
 // CreateAccount - Create account
 func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruct gen.AccountStruct) (gen.ImplResponse, error) {
 	// Timeout of this method is 3 seconds
@@ -200,44 +242,36 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	return gen.Response(200, user.AccountStruct), nil
 }
 
-// GetAccount - Get account info
-func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32) (gen.ImplResponse, error) {
-	// Find target account
-	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"accountID": accountID}
-	var account gen.AccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		utils.Debug(err.Error())
-		return gen.Response(404, gen.GeneralMessageResponse{Message: "Specified account does not exist."}), nil
+// EditAccount - Edit account info
+func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int32, accountStruct gen.AccountStruct) (gen.ImplResponse, error) {
+	issuerID, err := utils.GetUserID(ctx)
+	issuerPermission, err2 := utils.GetUserPermission(ctx)
+	if err != nil || err2 != nil {
+		if err != nil {
+			utils.Debug(err.Error())
+		} else {
+			utils.Debug(err2.Error())
+		}
+		return gen.Response(500, gen.GeneralMessageResponse{Message: utils.MessageInternalError}), nil
 	}
-	// Find inviter account
-	col = s.md.Database("accounts").Collection("users")
-	filter = bson.M{"accountID": account.Inviter.AccountID}
-	var inviter gen.AccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
-		utils.Debug(err.Error())
-		return gen.Response(500, gen.GeneralMessageResponse{Message: "Internal server error."}), nil
+	if accountID != issuerID && issuerPermission != utils.PermissionAdmin {
+		return gen.Response(403, gen.GeneralMessageResponse{Message: utils.MessagePermissionError}), nil
 	}
-	// Create response
-	accountResp := gen.AccountStruct{
-		AccountID:   account.AccountID,
-		DisplayID:   account.DisplayID,
-		Permission:  account.Permission,
-		Name:        account.Name,
-		Description: account.Description,
-		Favorite:    account.Favorite,
-		Access: gen.AccountStructAccess{
-			CanInvite:      account.Access.CanInvite,
-			CanLike:        account.Access.CanLike,
-			CanComment:     account.Access.CanComment,
-			CanCreatePost:  account.Access.CanCreatePost,
-			CanEditPost:    account.Access.CanEditPost,
-			CanApprovePost: account.Access.CanApprovePost,
-		},
-		Inviter: gen.LightAccountStruct{
-			AccountID: account.Inviter.AccountID,
-			Name:      inviter.Name,
-		},
-	}
-	return gen.Response(200, accountResp), nil
+
+	// TODO - update EditAccount with the required logic for this service method.
+	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	//TODO: Uncomment the next line to return response Response(200, AccountStruct{}) or use other options such as http.Ok ...
+	//return Response(200, AccountStruct{}), nil
+
+	//TODO: Uncomment the next line to return response Response(400, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(400, GeneralMessageResponse{}), nil
+
+	//TODO: Uncomment the next line to return response Response(403, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(403, GeneralMessageResponse{}), nil
+
+	//TODO: Uncomment the next line to return response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(404, GeneralMessageResponse{}), nil
+
+	return gen.Response(http.StatusOK, gen.AccountStruct{}), nil
 }
