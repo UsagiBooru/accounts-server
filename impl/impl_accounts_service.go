@@ -39,7 +39,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	var account gen.AccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
 		utils.Debug(err.Error())
-		return gen.Response(404, gen.GeneralMessageResponse{Message: utils.MessageNotFoundError}), nil
+		return utils.NewNotFoundError(), nil
 	}
 	// Find inviter account
 	col = s.md.Database("accounts").Collection("users")
@@ -47,7 +47,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	var inviter gen.AccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
 		utils.Debug(err.Error())
-		return gen.Response(500, gen.GeneralMessageResponse{Message: utils.MessageInternalError}), nil
+		return utils.NewInternalError(), nil
 	}
 	// Create response
 	accountResp := gen.AccountStruct{
@@ -236,7 +236,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	})
 	if err != nil {
 		utils.Debug(err.Error())
-		return gen.Response(500, gen.GeneralMessageResponse{Message: utils.MessageInternalError}), nil
+		return utils.NewInternalError(), nil
 	}
 	user.AccountStruct.Password = ""
 	return gen.Response(200, user.AccountStruct), nil
