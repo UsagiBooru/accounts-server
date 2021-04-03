@@ -56,6 +56,7 @@ func TestCreateAccount(t *testing.T) {
 	)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 

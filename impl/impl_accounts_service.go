@@ -3,7 +3,6 @@ package impl
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -38,13 +37,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	v := ctx.Value("user-id")
-	token, ok := v.(string)
-	utils.Debug("User id is" + string(token))
-	if !ok {
-		return gen.Response(500, gen.AccountStruct{}), nil
-	}
-
 	// Validate request fields
 	if resp := utils.ValidateRequiredFields(
 		accountStruct,
@@ -59,6 +51,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		return resp, nil
 	}
 
+	var user mongo_models.MongoAccount
 	// Use transaction to prevent duplicate request
 	err := s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
 		// Start transaction
@@ -131,15 +124,13 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			Code:    newInviteCodeForOld,
 			Inviter: invite.Inviter,
 		}
-		invite_str := fmt.Sprint(newInviteForOld)
-		utils.Debug(invite_str)
 		if _, err = col.InsertOne(ctx, utils.ConvertStructToBson(newInviteForOld)); err != nil {
 			utils.Debug(err.Error())
 			return errors.New("insert new invite for old account failed")
 		}
 		// Create new mongo user model
 		col = s.md.Database("accounts").Collection("users")
-		user := mongo_models.MongoAccount{
+		user = mongo_models.MongoAccount{
 			ID: primitive.NewObjectID(),
 			AccountStruct: gen.AccountStruct{
 				AccountID:   seq.Value + 1,
@@ -182,7 +173,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		}
 		// Insert new user
 		if _, err = col.InsertOne(ctx, utils.ConvertStructToBson(user)); err != nil {
-			return errors.New("insert newuser failed")
+			return errors.New("insert new user failed")
 		}
 		// Update sequence
 		col = s.md.Database("accounts").Collection("sequence")
@@ -201,12 +192,9 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			"invite.invitedCount": inviter.Invite.InvitedCount + 1,
 			"invite.code":         newInviteCodeForOld,
 		}}
-		resp, err := col.UpdateOne(ctx, filter, set)
-		if err != nil {
+		if _, err := col.UpdateOne(ctx, filter, set); err != nil {
 			return errors.New("update inviter's invite count failed")
 		}
-		resp_str := fmt.Sprint(resp)
-		utils.Debug(resp_str)
 		// Commit insert user / update sequence / update invite code
 		return sc.CommitTransaction(sc)
 
@@ -214,7 +202,8 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	if err != nil {
 		return gen.Response(500, gen.GeneralMessageResponse{Message: err.Error()}), nil
 	}
-	return gen.Response(200, gen.AccountStruct{}), nil
+	user.AccountStruct.Password = ""
+	return gen.Response(200, user.AccountStruct), nil
 }
 
 // GetAccount - Get account info
