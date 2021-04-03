@@ -67,7 +67,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		}
 		var invite mongo_models.MongoInvite
 		if err := col.FindOne(context.Background(), filter).Decode(&invite); err != nil {
-			utils.Debug(err.Error())
 			return errors.New("invite code was not found")
 		}
 		// Find inviter account
@@ -75,7 +74,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		filter = bson.M{"accountID": invite.Inviter}
 		var inviter mongo_models.MongoAccount
 		if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
-			utils.Debug(err.Error())
 			return errors.New("inviter account was not found")
 		}
 		// Get latest-1 accountID
@@ -83,7 +81,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		filter = bson.M{"key": "accountID"}
 		var seq mongo_models.MongoSequence
 		if err := col.FindOne(context.Background(), filter).Decode(&seq); err != nil {
-			utils.Debug(err.Error())
 			return errors.New("accountID sequence was not found")
 		}
 		// Update invite invitee
@@ -93,7 +90,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		}
 		set := bson.M{"$set": bson.M{"invitee": seq.Value + 1}}
 		if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-			utils.Debug(err.Error())
 			return errors.New("update invite invitee failed")
 		}
 		// Get password hash
@@ -102,7 +98,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			bcrypt.DefaultCost,
 		)
 		if err != nil {
-			utils.Debug(err.Error())
 			return errors.New("password hash create failed")
 		}
 		// Create new invite for new account
@@ -114,7 +109,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			Invitee: 0,
 		}
 		if _, err = col.InsertOne(ctx, utils.ConvertStructToBson(newInviteForNew)); err != nil {
-			utils.Debug(err.Error())
 			return errors.New("insert new invite for new account failed")
 		}
 		// Create new invite for old account
@@ -125,7 +119,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			Inviter: invite.Inviter,
 		}
 		if _, err = col.InsertOne(ctx, utils.ConvertStructToBson(newInviteForOld)); err != nil {
-			utils.Debug(err.Error())
 			return errors.New("insert new invite for old account failed")
 		}
 		// Create new mongo user model
@@ -200,7 +193,8 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 
 	})
 	if err != nil {
-		return gen.Response(500, gen.GeneralMessageResponse{Message: err.Error()}), nil
+		utils.Debug(err.Error())
+		return gen.Response(500, gen.GeneralMessageResponse{Message: utils.MessageInternalError}), nil
 	}
 	user.AccountStruct.Password = ""
 	return gen.Response(200, user.AccountStruct), nil
