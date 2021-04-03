@@ -34,6 +34,6 @@ func NewElasticSearchClient(host, user, pass string) *elasticsearch.Client {
 		Error("Get elasticsearch info failed: " + err.Error())
 		os.Exit(1)
 	}
-	Debug("Elasticsearch client created")
+	// Debug("Elasticsearch client created")
 	return Es
 }

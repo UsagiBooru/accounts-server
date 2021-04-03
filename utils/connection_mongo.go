@@ -21,6 +21,6 @@ func NewMongoDBClient(host, user, pass string) *mongo.Client {
 		Error("Connect to mongodb failed: " + err.Error())
 		os.Exit(1)
 	}
-	Debug("MongoDB client created.")
+	// Debug("MongoDB client created.")
 	return client
 }

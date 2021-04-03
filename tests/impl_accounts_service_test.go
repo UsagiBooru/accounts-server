@@ -23,12 +23,12 @@ func GetAccountsServer() *httptest.Server {
 }
 
 func TestMain(m *testing.M) {
-	utils.Debug("Resetting database...")
+	// utils.Debug("Resetting database...")
 	err := ReGenerateTestDatabase()
 	if err != nil {
 		utils.Error(err.Error())
 	}
-	utils.Debug("Reset database success.")
+	// utils.Debug("Reset database success.")
 
 	m.Run()
 }

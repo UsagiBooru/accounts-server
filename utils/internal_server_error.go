@@ -9,5 +9,5 @@ func VerifyServerError(err error) gen.ImplResponse {
 		Error(err.Error())
 		return gen.Response(500, gen.GeneralMessageResponse{Message: "Internal server error."})
 	}
-	return gen.Response(200, gen.ImplResponse{})
+	return gen.Response(200, nil)
 }
