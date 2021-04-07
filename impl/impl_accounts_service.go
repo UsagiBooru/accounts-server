@@ -40,36 +40,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 		utils.Debug(err.Error())
 		return utils.NewNotFoundError(), nil
 	}
-	// Find inviter account
-	col = s.md.Database("accounts").Collection("users")
-	filter = bson.M{"accountID": account.Inviter.AccountID}
-	var inviter mongo_models.MongoAccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
-		utils.Debug(err.Error())
-		return utils.NewInternalError(), nil
-	}
-	// Create response
-	accountResp := gen.AccountStruct{
-		AccountID:   account.AccountID,
-		DisplayID:   account.DisplayID,
-		Permission:  account.Permission,
-		Name:        account.Name,
-		Description: account.Description,
-		Favorite:    account.Favorite,
-		Access: gen.AccountStructAccess{
-			CanInvite:      account.Access.CanInvite,
-			CanLike:        account.Access.CanLike,
-			CanComment:     account.Access.CanComment,
-			CanCreatePost:  account.Access.CanCreatePost,
-			CanEditPost:    account.Access.CanEditPost,
-			CanApprovePost: account.Access.CanApprovePost,
-		},
-		Inviter: gen.LightAccountStruct{
-			AccountID: account.Inviter.AccountID,
-			Name:      inviter.Name,
-		},
-	}
-	return gen.Response(200, accountResp), nil
+	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }
 
 // CreateAccount - Create account
