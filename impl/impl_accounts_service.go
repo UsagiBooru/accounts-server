@@ -309,11 +309,11 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if err := accountCurrent.UpdateFavorite(accountChange.Favorite); err != nil {
 		return utils.NewLockedErrorWithMessage(err.Error()), nil
 	}
-	if (accountChange.Access != gen.AccountStructAccess{}) {
-		accountCurrent.Access = mongo_models.MongoAccountStructAccess(accountChange.Access)
+	if err := accountCurrent.UpdateAccess(accountChange.Access); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
 	}
-	if (accountChange.Ipfs != gen.AccountStructIpfs{}) {
-		accountCurrent.Ipfs = mongo_models.MongoAccountStructIpfs(accountChange.Ipfs)
+	if err := accountCurrent.UpdateIpfs(accountChange.Ipfs); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
 	}
 
 	// Update account

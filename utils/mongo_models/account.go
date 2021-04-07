@@ -183,6 +183,22 @@ func (f *MongoAccountStruct) UpdateFavorite(favorite int32) (err error) {
 	return nil
 }
 
+func (f *MongoAccountStruct) UpdateAccess(access gen.AccountStructAccess) (err error) {
+	if (access == gen.AccountStructAccess{}) {
+		return nil
+	}
+	f.Access = MongoAccountStructAccess(access)
+	return nil
+}
+
+func (f *MongoAccountStruct) UpdateIpfs(ipfs gen.AccountStructIpfs) (err error) {
+	if (ipfs == gen.AccountStructIpfs{}) {
+		return nil
+	}
+	f.Ipfs = MongoAccountStructIpfs(ipfs)
+	return nil
+}
+
 func (f *MongoAccountStruct) UpdateApiSeq(update int32) (err error) {
 	if update == 0 {
 		return nil
