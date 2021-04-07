@@ -9,6 +9,7 @@ import (
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/utils"
 	"github.com/UsagiBooru/accounts-server/utils/mongo_models"
+	jwt "github.com/form3tech-oss/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,7 +19,8 @@ import (
 type AccountsApiImplService struct {
 	gen.AccountsApiService
 	// es *elasticsearch.Client
-	md *mongo.Client
+	md        *mongo.Client
+	jwtSecret string
 }
 
 func NewAccountsApiImplService() gen.AccountsApiServicer {
@@ -26,7 +28,8 @@ func NewAccountsApiImplService() gen.AccountsApiServicer {
 	return &AccountsApiImplService{
 		AccountsApiService: gen.AccountsApiService{},
 		// es:                 utils.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
-		md: utils.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
+		md:        utils.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
+		jwtSecret: conf.JwtSecret,
 	}
 }
 
@@ -372,6 +375,36 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 		return utils.NewInternalError(), nil
 	}
 	return gen.Response(204, nil), nil
+}
+
+// LoginWithForm - Login with form
+func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.PostLoginWithFormRequest) (gen.ImplResponse, error) {
+	accountIdOrMail := req.Id
+	accountPassword := req.Password
+
+	// Find target account
+	col := s.md.Database("accounts").Collection("users")
+	filter := bson.M{"displayID": accountIdOrMail, "password": accountPassword}
+	var account mongo_models.MongoAccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
+		return utils.NewRequestError(), nil
+	}
+
+	// Generate jwt token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	TWO_MONTH := time.Hour * 24 * 60
+	claims["sub"] = account.AccountID
+	claims["name"] = account.Name
+	claims["permission"] = account.Permission
+	claims["iat"] = time.Now()
+	claims["exp"] = time.Now().Add(TWO_MONTH).Unix()
+	signed_token, err := token.SignedString([]byte(s.jwtSecret))
+	if err != nil {
+		return utils.NewInternalError(), nil
+	}
+
+	return gen.Response(200, gen.PostLoginWithFormResponse{ApiKey: signed_token}), nil
 }
 
 // GetAccountMe - Get user info (self)

@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/bshuster-repo/logrus-logstash-hook v1.0.0
 	github.com/elastic/go-elasticsearch/v7 v7.12.0
+	github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/kamva/mgm/v3 v3.1.0
