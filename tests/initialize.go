@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 
-	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/utils"
 	"github.com/UsagiBooru/accounts-server/utils/mongo_models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,48 +22,48 @@ func ReGenerateTestDatabase() error {
 	}
 	// Create account
 	col := m.Database("accounts").Collection("users")
-	user := mongo_models.MongoAccount{
-		ID: primitive.NewObjectID(),
-		AccountStruct: gen.AccountStruct{
-			AccountID:   1,
-			DisplayID:   "domao",
-			ApiSeq:      0,
-			Permission:  0,
-			Password:    "DUMMY_PASSWORD",
-			Mail:        "debug@example.com",
-			TotpEnabled: false,
-			Name:        "ドマオー",
-			Description: "",
-			Favorite:    0,
-			Access: gen.AccountStructAccess{
-				CanInvite:      true,
-				CanLike:        true,
-				CanComment:     true,
-				CanCreatePost:  true,
-				CanEditPost:    true,
-				CanApprovePost: true,
-			},
-			Inviter: gen.LightAccountStruct{
-				AccountID: 1,
-			},
-			Invite: gen.AccountStructInvite{
-				Code:         "dev",
-				InvitedCount: -1,
-			},
-			Notify: gen.AccountStructNotify{
-				HasLineNotify: false,
-				HasWebNotify:  false,
-			},
-			Ipfs: gen.AccountStructIpfs{
-				GatewayUrl:     "https://cloudflare-ipfs.com",
-				NodeUrl:        "",
-				GatewayEnabled: false,
-				NodeEnabled:    false,
-				PinEnabled:     false,
-			},
+	user := mongo_models.MongoAccountStruct{
+		ID:            primitive.NewObjectID(),
+		TotpCode:      "Hogehoge",
+		AccountStatus: 3,
+		AccountID:     1,
+		DisplayID:     "domao",
+		ApiSeq:        0,
+		Permission:    0,
+		Password:      "DUMMY_PASSWORD",
+		Mail:          "debug@example.com",
+		TotpEnabled:   false,
+		Name:          "ドマオー",
+		Description:   "",
+		Favorite:      0,
+		Access: mongo_models.MongoAccountStructAccess{
+			CanInvite:      true,
+			CanLike:        true,
+			CanComment:     true,
+			CanCreatePost:  true,
+			CanEditPost:    true,
+			CanApprovePost: true,
+		},
+		Inviter: mongo_models.LightMongoAccountStruct{
+			AccountID: 1,
+		},
+		Invite: mongo_models.MongoAccountStructInvite{
+			Code:         "dev",
+			InvitedCount: -1,
+		},
+		Notify: mongo_models.MongoAccountStructNotify{
+			HasLineNotify: false,
+			HasWebNotify:  false,
+		},
+		Ipfs: mongo_models.MongoAccountStructIpfs{
+			GatewayUrl:     "https://cloudflare-ipfs.com",
+			NodeUrl:        "",
+			GatewayEnabled: false,
+			NodeEnabled:    false,
+			PinEnabled:     false,
 		},
 	}
-	if _, err := col.InsertOne(context.Background(), utils.ConvertStructToBson(user)); err != nil {
+	if _, err := col.InsertOne(context.Background(), user); err != nil {
 		return err
 	}
 	// Create invite
@@ -75,7 +74,7 @@ func ReGenerateTestDatabase() error {
 		Inviter: 1,
 		Invitee: 0,
 	}
-	if _, err := col.InsertOne(context.Background(), utils.ConvertStructToBson(invite)); err != nil {
+	if _, err := col.InsertOne(context.Background(), invite); err != nil {
 		return err
 	}
 	// Create sequence
@@ -85,7 +84,7 @@ func ReGenerateTestDatabase() error {
 		Key:   "accountID",
 		Value: 1,
 	}
-	if _, err := col.InsertOne(context.Background(), utils.ConvertStructToBson(seq)); err != nil {
+	if _, err := col.InsertOne(context.Background(), seq); err != nil {
 		return err
 	}
 	return nil
