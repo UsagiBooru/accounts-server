@@ -12,6 +12,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	STATUS_NORMAL       = 0
+	STATUS_DELETED_SELF = 1
+	STATUS_DELETED_MOD  = 2
+)
+
 // MongoAccountStructNotify - 通知クライアントを設定済みか
 type MongoAccountStructNotify struct {
 	HasLineNotify bool `bson:"hasLineNotify,omitempty"`

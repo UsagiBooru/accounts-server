@@ -325,3 +325,51 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	}
 	return gen.Response(200, accountCurrent.ToOpenApi(s.md)), nil
 }
+
+// DeleteAccount - Delete account info
+func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID int32, password string) (gen.ImplResponse, error) {
+	// Get issuer id/permission
+	issuerID, err := utils.GetUserID(ctx)
+	issuerPermission, err2 := utils.GetUserPermission(ctx)
+	if err != nil || err2 != nil {
+		if err != nil {
+			utils.Debug(err.Error())
+		} else {
+			utils.Debug(err2.Error())
+		}
+		return utils.NewInternalError(), nil
+	}
+	// Find target account
+	col := s.md.Database("accounts").Collection("users")
+	filter := bson.M{"accountID": accountID}
+	var account mongo_models.MongoAccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
+		return utils.NewNotFoundError(), nil
+	}
+
+	// Validate permission
+	notMod := issuerPermission < utils.PermissionModerator
+	if accountID != issuerID && notMod {
+		return utils.NewPermissionError(), nil
+	}
+	// Validate old password hash
+	if notMod {
+		if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password)); err != nil {
+			return utils.NewPermissionErrorWithMessage("password mismatched"), nil
+		}
+	}
+
+	// Update account
+	if issuerPermission == utils.PermissionUser {
+		account.AccountStatus = mongo_models.STATUS_DELETED_SELF
+	} else {
+		account.AccountStatus = mongo_models.STATUS_DELETED_MOD
+	}
+	filter = bson.M{"accountID": account.AccountID}
+	set := bson.M{"$set": account}
+	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
+		utils.Debug(err.Error())
+		return utils.NewInternalError(), nil
+	}
+	return gen.Response(204, nil), nil
+}
