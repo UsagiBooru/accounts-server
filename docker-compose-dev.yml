@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  usagi_elastic:
+    build:
+        context: elasticsearch
+        dockerfile: Dockerfile
+    hostname: usagi_elastic
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms500m -Xmx800m"
+    restart: always
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+  usagi_mongo:
+    image: mongo:latest
+    hostname: usagi_mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=usagibooru
+      - MONGO_INITDB_ROOT_PASSWORD=kokoro_pyonpyon
+      - MONGO_INITDB_DATABASE=accounts
+      - TZ=Asia/Tokyo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - mongodb-configdb:/data/configdb
+      - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  usagi_monstache:
+    image: rwynn/monstache:latest
+    hostname: usagi_monstache
+    working_dir: /monstache        
+    command: -f config.toml
+    restart: always
+    ports:          
+        - "8080:8080"
+    volumes:          
+        - ./monstache/data:/monstache/
+    depends_on:
+      - usagi_mongo
+      - usagi_elastic
+volumes:
+  mongodb-data:
+    driver: local
+  mongodb-configdb:
+    driver: local
