@@ -63,7 +63,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		return resp, nil
 	}
 
-	var user mongo_models.MongoAccountStruct
+	var account mongo_models.MongoAccountStruct
 	// Use transaction to prevent duplicate request
 	err := s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
 		// Start transaction
@@ -136,7 +136,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		}
 		// Create new mongo user model
 		col = s.md.Database("accounts").Collection("users")
-		user = mongo_models.MongoAccountStruct{
+		account = mongo_models.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			AccountStatus: 0,
 			AccountID:     seq.Value + 1,
@@ -179,8 +179,8 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			},
 		}
 		// Insert new user
-		if _, err = col.InsertOne(ctx, user); err != nil {
-			return errors.New("insert new user failed")
+		if _, err = col.InsertOne(ctx, account); err != nil {
+			return errors.New("insert new account failed")
 		}
 		// Update sequence
 		col = s.md.Database("accounts").Collection("sequence")
@@ -210,7 +210,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		utils.Debug(err.Error())
 		return utils.NewInternalError(), nil
 	}
-	return gen.Response(200, user.ToOpenApi(s.md)), nil
+	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }
 
 // EditAccount - Edit account info
