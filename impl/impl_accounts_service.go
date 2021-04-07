@@ -9,7 +9,6 @@ import (
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/utils"
 	"github.com/UsagiBooru/accounts-server/utils/mongo_models"
-	"github.com/elastic/go-elasticsearch/v7"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,7 +17,7 @@ import (
 
 type AccountsApiImplService struct {
 	gen.AccountsApiService
-	es *elasticsearch.Client
+	// es *elasticsearch.Client
 	md *mongo.Client
 }
 
@@ -26,8 +25,8 @@ func NewAccountsApiImplService() gen.AccountsApiServicer {
 	conf := utils.GetConfig()
 	return &AccountsApiImplService{
 		AccountsApiService: gen.AccountsApiService{},
-		es:                 utils.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
-		md:                 utils.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
+		// es:                 utils.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
+		md: utils.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
 	}
 }
 
