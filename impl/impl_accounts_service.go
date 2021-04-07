@@ -373,3 +373,23 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 	}
 	return gen.Response(204, nil), nil
 }
+
+// GetAccountMe - Get user info (self)
+func (s *AccountsApiImplService) GetAccountMe(ctx context.Context) (gen.ImplResponse, error) {
+	// Get issuer id/permission
+	issuerID, err := utils.GetUserID(ctx)
+	if err != nil {
+		utils.Debug(err.Error())
+		return utils.NewInternalError(), nil
+	}
+
+	// Find target account
+	col := s.md.Database("accounts").Collection("users")
+	filter := bson.M{"accountID": issuerID}
+	var account mongo_models.MongoAccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
+		utils.Debug(err.Error())
+		return utils.NewNotFoundError(), nil
+	}
+	return gen.Response(200, account.ToOpenApi(s.md)), nil
+}
