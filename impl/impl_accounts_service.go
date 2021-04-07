@@ -243,7 +243,8 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 }
 
 // EditAccount - Edit account info
-func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int32, accountStruct gen.AccountStruct) (gen.ImplResponse, error) {
+func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int32, accountChange gen.AccountStruct) (gen.ImplResponse, error) {
+	// Get issuer id/permission
 	issuerID, err := utils.GetUserID(ctx)
 	issuerPermission, err2 := utils.GetUserPermission(ctx)
 	if err != nil || err2 != nil {
@@ -252,26 +253,104 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 		} else {
 			utils.Debug(err2.Error())
 		}
-		return gen.Response(500, gen.GeneralMessageResponse{Message: utils.MessageInternalError}), nil
+		return utils.NewInternalError(), nil
 	}
-	if accountID != issuerID && issuerPermission != utils.PermissionAdmin {
-		return gen.Response(403, gen.GeneralMessageResponse{Message: utils.MessagePermissionError}), nil
+	// Find target account
+	col := s.md.Database("accounts").Collection("users")
+	filter := bson.M{"accountID": accountID}
+	var accountCurrent mongo_models.MongoAccountStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&accountCurrent); err != nil {
+		utils.Debug(err.Error())
+		return utils.NewNotFoundError(), nil
 	}
 
-	// TODO - update EditAccount with the required logic for this service method.
-	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	/* Validate Permission */
+	notAdmin := issuerPermission != utils.PermissionAdmin
+	notMod := issuerPermission < utils.PermissionModerator
+	notSelf := accountID != issuerID
+	notSelfOrAdmin := notAdmin && notSelf
+	// Deny changing invite / inviter / notify
+	if (accountChange.Invite != gen.AccountStructInvite{}) ||
+		(accountChange.Inviter != gen.LightAccountStruct{}) ||
+		(accountChange.Notify != gen.AccountStructNotify{}) {
+		utils.Debug("Denied since tried to change invite / inviter / notify")
+		return utils.NewRequestError(), nil
+	}
+	// Deny changing different account if not greater than moderator
+	if notSelf && notMod {
+		return utils.NewPermissionError(), nil
+	}
+	// Deny changing if target permission is greater than moderator except target is ownself
+	if issuerPermission == utils.PermissionModerator &&
+		accountCurrent.Permission >= utils.PermissionModerator &&
+		notSelf {
+		utils.Debug("Denied since changing permission with moderator, and target was not normal user.")
+		return utils.NewPermissionError(), nil
+	}
+	// Deny changing permission if not admin
+	if accountChange.Permission != accountCurrent.Permission && notAdmin {
+		utils.Debug("Denied since changing permission with not admin")
+		return utils.NewPermissionError(), nil
+	}
+	// Deny changing access if not greater than moderator
+	if (accountChange.Access != gen.AccountStructAccess{}) && notMod {
+		utils.Debug("Denied since changing access with not greater than moderator")
+		return utils.NewPermissionError(), nil
+	}
+	// Deny changing password if not admin except target is ownself
+	if accountChange.Password != "" && notSelfOrAdmin {
+		utils.Debug("Denied since changing password with not admin and target wasn't ownself")
+		return utils.NewPermissionError(), nil
+	}
+	// Deny changing totp if not admin except target is ownself
+	if accountChange.TotpEnabled != accountCurrent.TotpEnabled && notSelfOrAdmin {
+		utils.Debug("Denied since changing totp with not admin and target wasn't ownself")
+		return utils.NewPermissionError(), nil
+	}
+	// Deny changing mail if not admin except target is ownself
+	if accountChange.Mail != "" && notSelfOrAdmin {
+		utils.Debug("Denied since changing mail with not admin and target wasn't ownself")
+		return utils.NewPermissionError(), nil
+	}
 
-	//TODO: Uncomment the next line to return response Response(200, AccountStruct{}) or use other options such as http.Ok ...
-	//return Response(200, AccountStruct{}), nil
+	/* Update using input */
+	if err := accountCurrent.UpdateDisplayID(col, accountChange.DisplayID); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if err := accountCurrent.UpdateName(col, accountChange.Name); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if err := accountCurrent.UpdateApiSeq(accountChange.ApiSeq); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if err := accountCurrent.UpdatePermission(accountChange.Permission); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if err := accountCurrent.UpdatePassword(accountChange.OldPassword, accountChange.Password); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if err := accountCurrent.UpdateDescription(accountChange.Description); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if err := accountCurrent.UpdateMail(accountChange.Mail); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if err := accountCurrent.UpdateFavorite(accountChange.Favorite); err != nil {
+		return utils.NewLockedErrorWithMessage(err.Error()), nil
+	}
+	if (accountChange.Access != gen.AccountStructAccess{}) {
+		accountCurrent.Access = mongo_models.MongoAccountStructAccess(accountChange.Access)
+	}
+	if (accountChange.Ipfs != gen.AccountStructIpfs{}) {
+		accountCurrent.Ipfs = mongo_models.MongoAccountStructIpfs(accountChange.Ipfs)
+	}
 
-	//TODO: Uncomment the next line to return response Response(400, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return Response(400, GeneralMessageResponse{}), nil
-
-	//TODO: Uncomment the next line to return response Response(403, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return Response(403, GeneralMessageResponse{}), nil
-
-	//TODO: Uncomment the next line to return response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return Response(404, GeneralMessageResponse{}), nil
-
-	return gen.Response(http.StatusOK, gen.AccountStruct{}), nil
+	// Update account
+	filter = bson.M{"accountID": accountCurrent.AccountID}
+	set := bson.M{"$set": accountCurrent}
+	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
+		utils.Debug(err.Error())
+		return utils.NewInternalError(), nil
+	}
+	return gen.Response(200, accountCurrent.ToOpenApi(s.md)), nil
 }
