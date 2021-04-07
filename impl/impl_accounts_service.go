@@ -35,7 +35,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")
 	filter := bson.M{"accountID": accountID}
-	var account gen.AccountStruct
+	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
 		utils.Debug(err.Error())
 		return utils.NewNotFoundError(), nil
@@ -43,7 +43,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	// Find inviter account
 	col = s.md.Database("accounts").Collection("users")
 	filter = bson.M{"accountID": account.Inviter.AccountID}
-	var inviter gen.AccountStruct
+	var inviter mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
 		utils.Debug(err.Error())
 		return utils.NewInternalError(), nil
@@ -92,7 +92,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		return resp, nil
 	}
 
-	var user mongo_models.MongoAccount
+	var user mongo_models.MongoAccountStruct
 	// Use transaction to prevent duplicate request
 	err := s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
 		// Start transaction
@@ -113,8 +113,9 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		// Find inviter account
 		col = s.md.Database("accounts").Collection("users")
 		filter = bson.M{"accountID": invite.Inviter}
-		var inviter mongo_models.MongoAccount
+		var inviter mongo_models.MongoAccountStruct
 		if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
+			utils.Debug(err.Error())
 			return errors.New("inviter account was not found")
 		}
 		// Get latest-1 accountID
@@ -149,7 +150,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			Inviter: seq.Value + 1,
 			Invitee: 0,
 		}
-		if _, err = col.InsertOne(ctx, utils.ConvertStructToBson(newInviteForNew)); err != nil {
+		if _, err = col.InsertOne(ctx, newInviteForNew); err != nil {
 			return errors.New("insert new invite for new account failed")
 		}
 		// Create new invite for old account
@@ -159,54 +160,55 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			Code:    newInviteCodeForOld,
 			Inviter: invite.Inviter,
 		}
-		if _, err = col.InsertOne(ctx, utils.ConvertStructToBson(newInviteForOld)); err != nil {
+		if _, err = col.InsertOne(ctx, newInviteForOld); err != nil {
 			return errors.New("insert new invite for old account failed")
 		}
 		// Create new mongo user model
 		col = s.md.Database("accounts").Collection("users")
-		user = mongo_models.MongoAccount{
-			ID: primitive.NewObjectID(),
-			AccountStruct: gen.AccountStruct{
-				AccountID:   seq.Value + 1,
-				DisplayID:   accountStruct.DisplayID,
-				ApiSeq:      0,
-				Permission:  0,
-				Password:    string(hashedPassword),
-				Mail:        accountStruct.Mail,
-				TotpEnabled: false,
-				Name:        accountStruct.Name,
-				Description: "",
-				Favorite:    0,
-				Access: gen.AccountStructAccess{
-					CanInvite:      true,
-					CanLike:        true,
-					CanComment:     true,
-					CanCreatePost:  true,
-					CanEditPost:    false,
-					CanApprovePost: false,
-				},
-				Inviter: gen.LightAccountStruct{
-					AccountID: invite.Inviter,
-				},
-				Invite: gen.AccountStructInvite{
-					InvitedCount: -1,
-					Code:         newInviteCodeForNew,
-				},
-				Notify: gen.AccountStructNotify{
-					HasLineNotify: false,
-					HasWebNotify:  false,
-				},
-				Ipfs: gen.AccountStructIpfs{
-					GatewayUrl:     "https://cloudflare-ipfs.com",
-					NodeUrl:        "",
-					GatewayEnabled: false,
-					NodeEnabled:    false,
-					PinEnabled:     false,
-				},
+		user = mongo_models.MongoAccountStruct{
+			ID:            primitive.NewObjectID(),
+			AccountStatus: 0,
+			AccountID:     seq.Value + 1,
+			DisplayID:     accountStruct.DisplayID,
+			ApiKey:        "",
+			ApiSeq:        0,
+			Permission:    0,
+			Password:      string(hashedPassword),
+			Mail:          accountStruct.Mail,
+			TotpCode:      "",
+			TotpEnabled:   false,
+			Name:          accountStruct.Name,
+			Description:   "",
+			Favorite:      0,
+			Access: mongo_models.MongoAccountStructAccess{
+				CanInvite:      true,
+				CanLike:        true,
+				CanComment:     true,
+				CanCreatePost:  true,
+				CanEditPost:    false,
+				CanApprovePost: false,
+			},
+			Inviter: mongo_models.LightMongoAccountStruct{
+				AccountID: invite.Inviter,
+			},
+			Invite: mongo_models.MongoAccountStructInvite{
+				InvitedCount: -1,
+				Code:         newInviteCodeForNew,
+			},
+			Notify: mongo_models.MongoAccountStructNotify{
+				HasLineNotify: false,
+				HasWebNotify:  false,
+			},
+			Ipfs: mongo_models.MongoAccountStructIpfs{
+				GatewayUrl:     "https://cloudflare-ipfs.com",
+				NodeUrl:        "",
+				GatewayEnabled: false,
+				NodeEnabled:    false,
+				PinEnabled:     false,
 			},
 		}
 		// Insert new user
-		if _, err = col.InsertOne(ctx, utils.ConvertStructToBson(user)); err != nil {
+		if _, err = col.InsertOne(ctx, user); err != nil {
 			return errors.New("insert new user failed")
 		}
 		// Update sequence
@@ -237,8 +239,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		utils.Debug(err.Error())
 		return utils.NewInternalError(), nil
 	}
-	user.AccountStruct.Password = ""
-	return gen.Response(200, user.AccountStruct), nil
+	return gen.Response(200, user.ToOpenApi(s.md)), nil
 }
 
 // EditAccount - Edit account info
