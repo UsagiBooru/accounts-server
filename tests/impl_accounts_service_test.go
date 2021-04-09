@@ -110,3 +110,18 @@ func TestEditAccount(t *testing.T) {
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
+
+func TestGetAccountMe(t *testing.T) {
+	s := GetAccountsServer()
+	defer s.Close()
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/accounts/me",
+		nil,
+	)
+	req = SetAdminUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
