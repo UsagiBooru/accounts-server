@@ -2,10 +2,12 @@ package tests
 
 import (
 	"context"
+	"errors"
 
 	"github.com/UsagiBooru/accounts-server/utils"
 	"github.com/UsagiBooru/accounts-server/utils/mongo_models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func ReGenerateTestDatabase() error {
@@ -20,17 +22,25 @@ func ReGenerateTestDatabase() error {
 			return err
 		}
 	}
+	// Get password hash
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(PASSWORD),
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return errors.New("password hash create failed")
+	}
 	// Create account
 	col := m.Database("accounts").Collection("users")
 	user := mongo_models.MongoAccountStruct{
 		ID:            primitive.NewObjectID(),
 		TotpCode:      "Hogehoge",
-		AccountStatus: 3,
+		AccountStatus: 0,
 		AccountID:     1,
 		DisplayID:     "domao",
 		ApiSeq:        0,
 		Permission:    0,
-		Password:      "DUMMY_PASSWORD",
+		Password:      string(hashedPassword),
 		Mail:          "debug@example.com",
 		TotpEnabled:   false,
 		Name:          "ドマオー",

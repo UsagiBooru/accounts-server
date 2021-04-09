@@ -125,3 +125,26 @@ func TestGetAccountMe(t *testing.T) {
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
+
+func TestLoginWithForm(t *testing.T) {
+	s := GetAccountsServer()
+	defer s.Close()
+	editAccount := gen.PostLoginWithFormRequest{
+		Id:       "domao",
+		Password: PASSWORD,
+	}
+	req_json, err := json.Marshal(editAccount)
+	if err != nil {
+		log.Fatal("Convert struct to json failed.")
+	}
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/accounts/login/form",
+		bytes.NewBuffer(req_json),
+	)
+	req = SetAdminUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
