@@ -7,11 +7,12 @@ import (
 )
 
 const (
-	MessageRequestError    = "Your request is not valid."
-	MessageLockedError     = "Specified content is locked and not editable."
-	MessageNotFoundError   = "Specified content was not exist."
-	MessagePermissionError = "You don't have enough permission to do it."
-	MessageInternalError   = "Unfortunately, the server exploded."
+	MessageRequestError      = "Your request is not valid."
+	MessageLockedError       = "Specified content is locked and not editable."
+	MessageNotFoundError     = "Specified content was not exist."
+	MessageUnauthorizedError = "Probably your password incorrect."
+	MessagePermissionError   = "You don't have enough permission to do it."
+	MessageInternalError     = "Unfortunately, the server exploded."
 )
 
 func NewRequestError() gen.ImplResponse {
@@ -52,6 +53,20 @@ func NewNotFoundError() gen.ImplResponse {
 func NewNotFoundErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusNotFound,
+		Body: gen.GeneralMessageResponse{Message: message},
+	}
+}
+
+func NewUnauthorizedError() gen.ImplResponse {
+	return gen.ImplResponse{
+		Code: http.StatusUnauthorized,
+		Body: gen.GeneralMessageResponse{Message: MessagePermissionError},
+	}
+}
+
+func NewUnauhorizedErrorWithMessage(message string) gen.ImplResponse {
+	return gen.ImplResponse{
+		Code: http.StatusUnauthorized,
 		Body: gen.GeneralMessageResponse{Message: message},
 	}
 }
