@@ -384,10 +384,18 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"displayID": accountIdOrMail, "password": accountPassword}
+	filter := bson.M{"displayID": accountIdOrMail}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		return utils.NewRequestError(), nil
+		return utils.NewNotFoundError(), nil
+	}
+	if err := account.ValidatePassword(accountPassword); err != nil {
+		return utils.NewUnauthorizedError(), nil
+	}
+
+	// Deny if account deleted
+	if account.AccountStatus != mongo_models.STATUS_NORMAL {
+		return utils.NewLockedErrorWithMessage("the account was deleted"), nil
 	}
 
 	// Generate jwt token
