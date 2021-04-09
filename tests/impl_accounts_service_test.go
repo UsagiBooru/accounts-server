@@ -148,3 +148,18 @@ func TestLoginWithForm(t *testing.T) {
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
+
+func TestDeleteAccount(t *testing.T) {
+	s := GetAccountsServer()
+	defer s.Close()
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/accounts/1",
+		nil,
+	)
+	req = SetAdminUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusNoContent, rec.Code)
+}
