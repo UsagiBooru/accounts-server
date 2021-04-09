@@ -30,14 +30,14 @@ func NewRequestErrorWithMessage(message string) gen.ImplResponse {
 
 func NewLockedError() gen.ImplResponse {
 	return gen.ImplResponse{
-		Code: http.StatusBadRequest,
+		Code: http.StatusLocked,
 		Body: gen.GeneralMessageResponse{Message: MessageLockedError},
 	}
 }
 
 func NewLockedErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
-		Code: http.StatusNotFound,
+		Code: http.StatusLocked,
 		Body: gen.GeneralMessageResponse{Message: message},
 	}
 }
