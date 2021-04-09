@@ -241,6 +241,14 @@ func (f *MongoAccountStruct) UpdatePassword(old_password string, new_password st
 	return nil
 }
 
+func (f *MongoAccountStruct) ValidatePassword(password string) (err error) {
+	// Validate old password hash
+	if err := bcrypt.CompareHashAndPassword([]byte(f.Password), []byte(password)); err != nil {
+		return errors.New("password mismatched")
+	}
+	return nil
+}
+
 func (f *MongoAccountStruct) ToOpenApi(md *mongo.Client) (ac *gen.AccountStruct) {
 	col := md.Database("accounts").Collection("users")
 	filter := bson.M{"accountID": f.Inviter.AccountID}
