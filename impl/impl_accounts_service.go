@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/UsagiBooru/accounts-server/gen"
-	"github.com/UsagiBooru/accounts-server/utils"
-	"github.com/UsagiBooru/accounts-server/utils/mongo_models"
+	"github.com/UsagiBooru/accounts-server/models/mongo_models"
+	"github.com/UsagiBooru/accounts-server/utils/internal"
+	"github.com/UsagiBooru/accounts-server/utils/request"
+	"github.com/UsagiBooru/accounts-server/utils/response"
 	jwt "github.com/form3tech-oss/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,11 +26,11 @@ type AccountsApiImplService struct {
 }
 
 func NewAccountsApiImplService() gen.AccountsApiServicer {
-	conf := utils.GetConfig()
+	conf := internal.GetConfig()
 	return &AccountsApiImplService{
 		AccountsApiService: gen.AccountsApiService{},
-		// es:                 utils.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
-		md:        utils.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
+		// es:                 internal.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
+		md:        internal.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
 		jwtSecret: conf.JwtSecret,
 	}
 }
@@ -40,8 +42,8 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	filter := bson.M{"accountID": accountID}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		utils.Debug(err.Error())
-		return utils.NewNotFoundError(), nil
+		internal.Debug(err.Error())
+		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }
@@ -53,13 +55,13 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	defer cancel()
 
 	// Validate request fields
-	if resp := utils.ValidateRequiredFields(
+	if resp := request.ValidateRequiredFields(
 		accountStruct,
 		[]string{"name", "displayID", "password", "mail"},
 	); resp.Code != http.StatusOK {
 		return resp, nil
 	}
-	if resp := utils.ValidateRequiredFields(
+	if resp := request.ValidateRequiredFields(
 		accountStruct.Invite,
 		[]string{"code"},
 	); resp.Code != http.StatusOK {
@@ -89,7 +91,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		filter = bson.M{"accountID": invite.Inviter}
 		var inviter mongo_models.MongoAccountStruct
 		if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
-			utils.Debug(err.Error())
+			internal.Debug(err.Error())
 			return errors.New("inviter account was not found")
 		}
 		// Get latest-1 accountID
@@ -117,7 +119,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			return errors.New("password hash create failed")
 		}
 		// Create new invite for new account
-		newInviteCodeForNew := utils.GetShortUUID(8)
+		newInviteCodeForNew := internal.GetShortUUID(8)
 		newInviteForNew := mongo_models.MongoInvite{
 			ID:      primitive.NewObjectID(),
 			Code:    newInviteCodeForNew,
@@ -128,7 +130,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			return errors.New("insert new invite for new account failed")
 		}
 		// Create new invite for old account
-		newInviteCodeForOld := utils.GetShortUUID(8)
+		newInviteCodeForOld := internal.GetShortUUID(8)
 		newInviteForOld := mongo_models.MongoInvite{
 			ID:      primitive.NewObjectID(),
 			Code:    newInviteCodeForOld,
@@ -210,8 +212,8 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 
 	})
 	if err != nil {
-		utils.Debug(err.Error())
-		return utils.NewInternalError(), nil
+		internal.Debug(err.Error())
+		return response.NewInternalError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }
@@ -219,112 +221,112 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 // EditAccount - Edit account info
 func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int32, accountChange gen.AccountStruct) (gen.ImplResponse, error) {
 	// Get issuer id/permission
-	issuerID, err := utils.GetUserID(ctx)
-	issuerPermission, err2 := utils.GetUserPermission(ctx)
+	issuerID, err := request.GetUserID(ctx)
+	issuerPermission, err2 := request.GetUserPermission(ctx)
 	if err != nil || err2 != nil {
 		if err != nil {
-			utils.Debug(err.Error())
+			internal.Debug(err.Error())
 		} else {
-			utils.Debug(err2.Error())
+			internal.Debug(err2.Error())
 		}
-		return utils.NewInternalError(), nil
+		return response.NewInternalError(), nil
 	}
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")
 	filter := bson.M{"accountID": accountID}
 	var accountCurrent mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&accountCurrent); err != nil {
-		utils.Debug(err.Error())
-		return utils.NewNotFoundError(), nil
+		internal.Debug(err.Error())
+		return response.NewNotFoundError(), nil
 	}
 
 	/* Validate Permission */
-	notAdmin := issuerPermission != utils.PermissionAdmin
-	notMod := issuerPermission < utils.PermissionModerator
+	notAdmin := issuerPermission != request.PermissionAdmin
+	notMod := issuerPermission < request.PermissionModerator
 	notSelf := accountID != issuerID
 	notSelfOrAdmin := notAdmin && notSelf
 	// Deny changing invite / inviter / notify
 	if (accountChange.Invite != gen.AccountStructInvite{}) ||
 		(accountChange.Inviter != gen.LightAccountStruct{}) ||
 		(accountChange.Notify != gen.AccountStructNotify{}) {
-		utils.Debug("Denied since tried to change invite / inviter / notify")
-		return utils.NewRequestError(), nil
+		internal.Debug("Denied since tried to change invite / inviter / notify")
+		return response.NewRequestError(), nil
 	}
 	// Deny changing different account if not greater than moderator
 	if notSelf && notMod {
-		return utils.NewPermissionError(), nil
+		return response.NewPermissionError(), nil
 	}
 	// Deny changing if target permission is greater than moderator except target is ownself
-	if issuerPermission == utils.PermissionModerator &&
-		accountCurrent.Permission >= utils.PermissionModerator &&
+	if issuerPermission == request.PermissionModerator &&
+		accountCurrent.Permission >= request.PermissionModerator &&
 		notSelf {
-		utils.Debug("Denied since changing permission with moderator, and target was not normal user.")
-		return utils.NewPermissionError(), nil
+		internal.Debug("Denied since changing permission with moderator, and target was not normal user.")
+		return response.NewPermissionError(), nil
 	}
 	// Deny changing permission if not admin
 	if accountChange.Permission != accountCurrent.Permission && notAdmin {
-		utils.Debug("Denied since changing permission with not admin")
-		return utils.NewPermissionError(), nil
+		internal.Debug("Denied since changing permission with not admin")
+		return response.NewPermissionError(), nil
 	}
 	// Deny changing access if not greater than moderator
 	if (accountChange.Access != gen.AccountStructAccess{}) && notMod {
-		utils.Debug("Denied since changing access with not greater than moderator")
-		return utils.NewPermissionError(), nil
+		internal.Debug("Denied since changing access with not greater than moderator")
+		return response.NewPermissionError(), nil
 	}
 	// Deny changing password if not admin except target is ownself
 	if accountChange.Password != "" && notSelfOrAdmin {
-		utils.Debug("Denied since changing password with not admin and target wasn't ownself")
-		return utils.NewPermissionError(), nil
+		internal.Debug("Denied since changing password with not admin and target wasn't ownself")
+		return response.NewPermissionError(), nil
 	}
 	// Deny changing totp if not admin except target is ownself
 	if accountChange.TotpEnabled != accountCurrent.TotpEnabled && notSelfOrAdmin {
-		utils.Debug("Denied since changing totp with not admin and target wasn't ownself")
-		return utils.NewPermissionError(), nil
+		internal.Debug("Denied since changing totp with not admin and target wasn't ownself")
+		return response.NewPermissionError(), nil
 	}
 	// Deny changing mail if not admin except target is ownself
 	if accountChange.Mail != "" && notSelfOrAdmin {
-		utils.Debug("Denied since changing mail with not admin and target wasn't ownself")
-		return utils.NewPermissionError(), nil
+		internal.Debug("Denied since changing mail with not admin and target wasn't ownself")
+		return response.NewPermissionError(), nil
 	}
 
 	/* Update using input */
 	if err := accountCurrent.UpdateDisplayID(col, accountChange.DisplayID); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateName(col, accountChange.Name); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateApiSeq(accountChange.ApiSeq); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdatePermission(accountChange.Permission); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdatePassword(accountChange.OldPassword, accountChange.Password); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateDescription(accountChange.Description); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateMail(accountChange.Mail); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateFavorite(accountChange.Favorite); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateAccess(accountChange.Access); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateIpfs(accountChange.Ipfs); err != nil {
-		return utils.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 
 	// Update account
 	filter = bson.M{"accountID": accountCurrent.AccountID}
 	set := bson.M{"$set": accountCurrent}
 	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-		utils.Debug(err.Error())
-		return utils.NewInternalError(), nil
+		internal.Debug(err.Error())
+		return response.NewInternalError(), nil
 	}
 	return gen.Response(200, accountCurrent.ToOpenApi(s.md)), nil
 }
@@ -332,38 +334,38 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 // DeleteAccount - Delete account info
 func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID int32, password string) (gen.ImplResponse, error) {
 	// Get issuer id/permission
-	issuerID, err := utils.GetUserID(ctx)
-	issuerPermission, err2 := utils.GetUserPermission(ctx)
+	issuerID, err := request.GetUserID(ctx)
+	issuerPermission, err2 := request.GetUserPermission(ctx)
 	if err != nil || err2 != nil {
 		if err != nil {
-			utils.Debug(err.Error())
+			internal.Debug(err.Error())
 		} else {
-			utils.Debug(err2.Error())
+			internal.Debug(err2.Error())
 		}
-		return utils.NewInternalError(), nil
+		return response.NewInternalError(), nil
 	}
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")
 	filter := bson.M{"accountID": accountID}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		return utils.NewNotFoundError(), nil
+		return response.NewNotFoundError(), nil
 	}
 
 	// Validate permission
-	notMod := issuerPermission < utils.PermissionModerator
+	notMod := issuerPermission < request.PermissionModerator
 	if accountID != issuerID && notMod {
-		return utils.NewPermissionError(), nil
+		return response.NewPermissionError(), nil
 	}
 	// Validate old password hash
 	if notMod {
 		if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password)); err != nil {
-			return utils.NewPermissionErrorWithMessage("password mismatched"), nil
+			return response.NewPermissionErrorWithMessage("password mismatched"), nil
 		}
 	}
 
 	// Update account
-	if issuerPermission == utils.PermissionUser {
+	if issuerPermission == request.PermissionUser {
 		account.AccountStatus = mongo_models.STATUS_DELETED_SELF
 	} else {
 		account.AccountStatus = mongo_models.STATUS_DELETED_MOD
@@ -371,8 +373,8 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 	filter = bson.M{"accountID": account.AccountID}
 	set := bson.M{"$set": account}
 	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-		utils.Debug(err.Error())
-		return utils.NewInternalError(), nil
+		internal.Debug(err.Error())
+		return response.NewInternalError(), nil
 	}
 	return gen.Response(204, nil), nil
 }
@@ -387,15 +389,15 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 	filter := bson.M{"displayID": accountIdOrMail}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		return utils.NewNotFoundError(), nil
+		return response.NewNotFoundError(), nil
 	}
 	if err := account.ValidatePassword(accountPassword); err != nil {
-		return utils.NewUnauthorizedError(), nil
+		return response.NewUnauthorizedError(), nil
 	}
 
 	// Deny if account deleted
 	if account.AccountStatus != mongo_models.STATUS_NORMAL {
-		return utils.NewLockedErrorWithMessage("the account was deleted"), nil
+		return response.NewLockedErrorWithMessage("the account was deleted"), nil
 	}
 
 	// Generate jwt token
@@ -409,19 +411,28 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 	claims["exp"] = time.Now().Add(TWO_MONTH).Unix()
 	signed_token, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {
-		return utils.NewInternalError(), nil
+		return response.NewInternalError(), nil
 	}
 
 	return gen.Response(200, gen.PostLoginWithFormResponse{ApiKey: signed_token}), nil
 }
 
+// GetUploadHistory - Get upload history
+func (s *AccountsApiImplService) GetUploadHistory(ctx context.Context, accountID int32, page int32, sort string, order string, perPage int32) (gen.ImplResponse, error) {
+	// TODO - update GetUploadHistory with the required logic for this service method.
+
+	//TODO: Uncomment the next line to return response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(404, GeneralMessageResponse{}), nil
+	return gen.Response(200, gen.GetUploadHistoryResponse{}), nil
+}
+
 // GetAccountMe - Get user info (self)
 func (s *AccountsApiImplService) GetAccountMe(ctx context.Context) (gen.ImplResponse, error) {
 	// Get issuer id/permission
-	issuerID, err := utils.GetUserID(ctx)
+	issuerID, err := request.GetUserID(ctx)
 	if err != nil {
-		utils.Debug(err.Error())
-		return utils.NewInternalError(), nil
+		internal.Debug(err.Error())
+		return response.NewInternalError(), nil
 	}
 
 	// Find target account
@@ -429,8 +440,8 @@ func (s *AccountsApiImplService) GetAccountMe(ctx context.Context) (gen.ImplResp
 	filter := bson.M{"accountID": issuerID}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		utils.Debug(err.Error())
-		return utils.NewNotFoundError(), nil
+		internal.Debug(err.Error())
+		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }
