@@ -13,14 +13,14 @@ import (
 
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/impl"
-	"github.com/UsagiBooru/accounts-server/utils/internal"
 	"github.com/UsagiBooru/accounts-server/utils/request"
+	"github.com/UsagiBooru/accounts-server/utils/server"
 )
 
 func GetAccountsServer() *httptest.Server {
 	AccountsApiService := impl.NewAccountsApiImplService()
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
-	router := internal.NewRouterWithInject(AccountsApiController)
+	router := server.NewRouterWithInject(AccountsApiController)
 	return httptest.NewServer(router)
 }
 
@@ -43,12 +43,12 @@ func SetNormalUserHeader(req *http.Request) *http.Request {
 }
 
 func TestMain(m *testing.M) {
-	// internal.Debug("Resetting database...")
+	// server.Debug("Resetting database...")
 	err := ReGenerateTestDatabase()
 	if err != nil {
-		internal.Error(err.Error())
+		server.Error(err.Error())
 	}
-	// internal.Debug("Reset database success.")
+	// server.Debug("Reset database success.")
 
 	m.Run()
 }

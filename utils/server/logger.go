@@ -1,4 +1,4 @@
-package internal
+package server
 
 import (
 	_ "github.com/bshuster-repo/logrus-logstash-hook"

@@ -8,9 +8,9 @@ import (
 
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/models/mongo_models"
-	"github.com/UsagiBooru/accounts-server/utils/internal"
 	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/UsagiBooru/accounts-server/utils/response"
+	"github.com/UsagiBooru/accounts-server/utils/server"
 	jwt "github.com/form3tech-oss/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,11 +26,11 @@ type AccountsApiImplService struct {
 }
 
 func NewAccountsApiImplService() gen.AccountsApiServicer {
-	conf := internal.GetConfig()
+	conf := server.GetConfig()
 	return &AccountsApiImplService{
 		AccountsApiService: gen.AccountsApiService{},
-		// es:                 internal.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
-		md:        internal.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
+		// es:                 server.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
+		md:        server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
 		jwtSecret: conf.JwtSecret,
 	}
 }
@@ -42,7 +42,7 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	filter := bson.M{"accountID": accountID}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
@@ -91,7 +91,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		filter = bson.M{"accountID": invite.Inviter}
 		var inviter mongo_models.MongoAccountStruct
 		if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
-			internal.Debug(err.Error())
+			server.Debug(err.Error())
 			return errors.New("inviter account was not found")
 		}
 		// Get latest-1 accountID
@@ -119,7 +119,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			return errors.New("password hash create failed")
 		}
 		// Create new invite for new account
-		newInviteCodeForNew := internal.GetShortUUID(8)
+		newInviteCodeForNew := server.GetShortUUID(8)
 		newInviteForNew := mongo_models.MongoInvite{
 			ID:      primitive.NewObjectID(),
 			Code:    newInviteCodeForNew,
@@ -130,7 +130,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			return errors.New("insert new invite for new account failed")
 		}
 		// Create new invite for old account
-		newInviteCodeForOld := internal.GetShortUUID(8)
+		newInviteCodeForOld := server.GetShortUUID(8)
 		newInviteForOld := mongo_models.MongoInvite{
 			ID:      primitive.NewObjectID(),
 			Code:    newInviteCodeForOld,
@@ -212,7 +212,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 
 	})
 	if err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return response.NewInternalError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
@@ -225,9 +225,9 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	issuerPermission, err2 := request.GetUserPermission(ctx)
 	if err != nil || err2 != nil {
 		if err != nil {
-			internal.Debug(err.Error())
+			server.Debug(err.Error())
 		} else {
-			internal.Debug(err2.Error())
+			server.Debug(err2.Error())
 		}
 		return response.NewInternalError(), nil
 	}
@@ -236,7 +236,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	filter := bson.M{"accountID": accountID}
 	var accountCurrent mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&accountCurrent); err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return response.NewNotFoundError(), nil
 	}
 
@@ -249,7 +249,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if (accountChange.Invite != gen.AccountStructInvite{}) ||
 		(accountChange.Inviter != gen.LightAccountStruct{}) ||
 		(accountChange.Notify != gen.AccountStructNotify{}) {
-		internal.Debug("Denied since tried to change invite / inviter / notify")
+		server.Debug("Denied since tried to change invite / inviter / notify")
 		return response.NewRequestError(), nil
 	}
 	// Deny changing different account if not greater than moderator
@@ -260,32 +260,32 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if issuerPermission == request.PermissionModerator &&
 		accountCurrent.Permission >= request.PermissionModerator &&
 		notSelf {
-		internal.Debug("Denied since changing permission with moderator, and target was not normal user.")
+		server.Debug("Denied since changing permission with moderator, and target was not normal user.")
 		return response.NewPermissionError(), nil
 	}
 	// Deny changing permission if not admin
 	if accountChange.Permission != accountCurrent.Permission && notAdmin {
-		internal.Debug("Denied since changing permission with not admin")
+		server.Debug("Denied since changing permission with not admin")
 		return response.NewPermissionError(), nil
 	}
 	// Deny changing access if not greater than moderator
 	if (accountChange.Access != gen.AccountStructAccess{}) && notMod {
-		internal.Debug("Denied since changing access with not greater than moderator")
+		server.Debug("Denied since changing access with not greater than moderator")
 		return response.NewPermissionError(), nil
 	}
 	// Deny changing password if not admin except target is ownself
 	if accountChange.Password != "" && notSelfOrAdmin {
-		internal.Debug("Denied since changing password with not admin and target wasn't ownself")
+		server.Debug("Denied since changing password with not admin and target wasn't ownself")
 		return response.NewPermissionError(), nil
 	}
 	// Deny changing totp if not admin except target is ownself
 	if accountChange.TotpEnabled != accountCurrent.TotpEnabled && notSelfOrAdmin {
-		internal.Debug("Denied since changing totp with not admin and target wasn't ownself")
+		server.Debug("Denied since changing totp with not admin and target wasn't ownself")
 		return response.NewPermissionError(), nil
 	}
 	// Deny changing mail if not admin except target is ownself
 	if accountChange.Mail != "" && notSelfOrAdmin {
-		internal.Debug("Denied since changing mail with not admin and target wasn't ownself")
+		server.Debug("Denied since changing mail with not admin and target wasn't ownself")
 		return response.NewPermissionError(), nil
 	}
 
@@ -325,7 +325,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	filter = bson.M{"accountID": accountCurrent.AccountID}
 	set := bson.M{"$set": accountCurrent}
 	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return response.NewInternalError(), nil
 	}
 	return gen.Response(200, accountCurrent.ToOpenApi(s.md)), nil
@@ -338,9 +338,9 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 	issuerPermission, err2 := request.GetUserPermission(ctx)
 	if err != nil || err2 != nil {
 		if err != nil {
-			internal.Debug(err.Error())
+			server.Debug(err.Error())
 		} else {
-			internal.Debug(err2.Error())
+			server.Debug(err2.Error())
 		}
 		return response.NewInternalError(), nil
 	}
@@ -373,7 +373,7 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 	filter = bson.M{"accountID": account.AccountID}
 	set := bson.M{"$set": account}
 	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return response.NewInternalError(), nil
 	}
 	return gen.Response(204, nil), nil
@@ -431,7 +431,7 @@ func (s *AccountsApiImplService) GetAccountMe(ctx context.Context) (gen.ImplResp
 	// Get issuer id/permission
 	issuerID, err := request.GetUserID(ctx)
 	if err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return response.NewInternalError(), nil
 	}
 
@@ -440,7 +440,7 @@ func (s *AccountsApiImplService) GetAccountMe(ctx context.Context) (gen.ImplResp
 	filter := bson.M{"accountID": issuerID}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil

@@ -16,11 +16,11 @@ import (
 
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/impl"
-	"github.com/UsagiBooru/accounts-server/utils/internal"
+	"github.com/UsagiBooru/accounts-server/utils/server"
 )
 
 func main() {
-	internal.Info("Server started")
+	server.Info("Server started")
 
 	AccountsApiService := impl.NewAccountsApiImplService()
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
@@ -37,7 +37,7 @@ func main() {
 	TimelineApiService := gen.NewTimelineApiService()
 	TimelineApiController := gen.NewTimelineApiController(TimelineApiService)
 
-	router := internal.NewRouterWithInject(AccountsApiController, MutesApiController, MylistApiController, NotifyApiController, TimelineApiController)
+	router := server.NewRouterWithInject(AccountsApiController, MutesApiController, MylistApiController, NotifyApiController, TimelineApiController)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }

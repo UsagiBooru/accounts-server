@@ -4,24 +4,24 @@ import (
 	"encoding/json"
 
 	"github.com/UsagiBooru/accounts-server/gen"
-	"github.com/UsagiBooru/accounts-server/utils/internal"
 	"github.com/UsagiBooru/accounts-server/utils/response"
+	"github.com/UsagiBooru/accounts-server/utils/server"
 )
 
 func ValidateRequiredFields(req interface{}, fields []string) gen.ImplResponse {
 	reqJson, err := json.Marshal(req)
 	if err != nil {
-		internal.Error(err.Error())
+		server.Error(err.Error())
 		return response.NewRequestErrorWithMessage("unknown request format error")
 	}
 	var mapData map[string]interface{}
 	if err := json.Unmarshal([]byte(reqJson), &mapData); err != nil {
-		internal.Error(err.Error())
+		server.Error(err.Error())
 		return response.NewRequestErrorWithMessage("unknown request format error")
 	}
 	for _, field := range fields {
 		if _, ok := mapData[field]; !ok {
-			internal.Error(err.Error())
+			server.Error(err.Error())
 			return response.NewRequestErrorWithMessage("request parameter " + field + " was not satisfied")
 		}
 	}

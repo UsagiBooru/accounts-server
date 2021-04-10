@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/UsagiBooru/accounts-server/gen"
-	"github.com/UsagiBooru/accounts-server/utils/internal"
+	"github.com/UsagiBooru/accounts-server/utils/server"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -254,7 +254,7 @@ func (f *MongoAccountStruct) ToOpenApi(md *mongo.Client) (ac *gen.AccountStruct)
 	filter := bson.M{"accountID": f.Inviter.AccountID}
 	var inviter LightMongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
-		internal.Debug(err.Error())
+		server.Debug(err.Error())
 		return nil
 	}
 	resp := gen.AccountStruct{
