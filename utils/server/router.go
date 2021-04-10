@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/UsagiBooru/accounts-server/gen"
+	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/gorilla/mux"
 )
 
@@ -15,8 +16,8 @@ func injectHeaderToContext(next http.HandlerFunc) http.HandlerFunc {
 		Debug("User id is: " + string(user_id))
 		user_permission := r.Header.Get("x-consumer-user-permission")
 		Debug("User permission is: " + string(user_permission))
-		ctx := context.WithValue(r.Context(), request.context_user_id, user_id)
-		ctx = context.WithValue(ctx, request.context_user_permission, user_permission)
+		ctx := context.WithValue(r.Context(), request.Context_user_id, user_id)
+		ctx = context.WithValue(ctx, request.Context_user_permission, user_permission)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	}

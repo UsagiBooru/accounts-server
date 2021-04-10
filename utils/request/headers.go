@@ -8,12 +8,12 @@ import (
 
 type key int
 
-const context_user_id key = 1
-const context_user_permission key = 2
+const Context_user_id key = 1
+const Context_user_permission key = 2
 
 // load permission from context
 func GetUserPermission(ctx context.Context) (int32, error) {
-	v := ctx.Value(context_user_permission)
+	v := ctx.Value(Context_user_permission)
 	permission, ok := v.(string)
 	if !ok {
 		return 0, errors.New("could not parse permission header")
@@ -27,7 +27,7 @@ func GetUserPermission(ctx context.Context) (int32, error) {
 
 // load user id from context
 func GetUserID(ctx context.Context) (int32, error) {
-	v := ctx.Value(context_user_id)
+	v := ctx.Value(Context_user_id)
 	user_id, ok := v.(string)
 	if !ok {
 		return 0, errors.New("could not parse user id header")
