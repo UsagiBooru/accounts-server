@@ -1,4 +1,4 @@
-package utils
+package request
 
 const (
 	PermissionAdmin     = 9

@@ -1,4 +1,4 @@
-package utils
+package internal
 
 import (
 	_ "github.com/bshuster-repo/logrus-logstash-hook"
