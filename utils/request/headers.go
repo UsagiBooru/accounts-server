@@ -8,10 +8,8 @@ import (
 
 type key int
 
-const (
-	context_user_id         key = 1
-	context_user_permission key = 2
-)
+const context_user_id key = 1
+const context_user_permission key = 2
 
 // load permission from context
 func GetUserPermission(ctx context.Context) (int32, error) {

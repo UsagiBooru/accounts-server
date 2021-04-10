@@ -13,41 +13,42 @@ import (
 
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/impl"
-	"github.com/UsagiBooru/accounts-server/utils"
+	"github.com/UsagiBooru/accounts-server/utils/internal"
+	"github.com/UsagiBooru/accounts-server/utils/request"
 )
 
 func GetAccountsServer() *httptest.Server {
 	AccountsApiService := impl.NewAccountsApiImplService()
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
-	router := utils.NewRouterWithInject(AccountsApiController)
+	router := internal.NewRouterWithInject(AccountsApiController)
 	return httptest.NewServer(router)
 }
 
 func SetAdminUserHeader(req *http.Request) *http.Request {
 	req.Header.Set("x-consumer-user-id", "1")
-	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionAdmin))
+	req.Header.Set("x-consumer-user-permission", strconv.Itoa(request.PermissionAdmin))
 	return req
 }
 
 func SetModUserHeader(req *http.Request) *http.Request {
 	req.Header.Set("x-consumer-user-id", "2")
-	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionModerator))
+	req.Header.Set("x-consumer-user-permission", strconv.Itoa(request.PermissionModerator))
 	return req
 }
 
 func SetNormalUserHeader(req *http.Request) *http.Request {
 	req.Header.Set("x-consumer-user-id", "3")
-	req.Header.Set("x-consumer-user-permission", strconv.Itoa(utils.PermissionUser))
+	req.Header.Set("x-consumer-user-permission", strconv.Itoa(request.PermissionUser))
 	return req
 }
 
 func TestMain(m *testing.M) {
-	// utils.Debug("Resetting database...")
+	// internal.Debug("Resetting database...")
 	err := ReGenerateTestDatabase()
 	if err != nil {
-		utils.Error(err.Error())
+		internal.Error(err.Error())
 	}
-	// utils.Debug("Reset database success.")
+	// internal.Debug("Reset database success.")
 
 	m.Run()
 }

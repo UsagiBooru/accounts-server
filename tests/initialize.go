@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 
-	"github.com/UsagiBooru/accounts-server/utils"
-	"github.com/UsagiBooru/accounts-server/utils/mongo_models"
+	"github.com/UsagiBooru/accounts-server/models/mongo_models"
+	"github.com/UsagiBooru/accounts-server/utils/internal"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func ReGenerateTestDatabase() error {
-	conf := utils.GetConfig()
-	m := utils.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
+	conf := internal.GetConfig()
+	m := internal.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
 	// Drop database
 	drops := []string{"users", "invites", "sequence"}
 	for _, d := range drops {
