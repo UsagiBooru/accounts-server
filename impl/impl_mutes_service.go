@@ -57,6 +57,15 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
 		return response.NewNotFoundError(), nil
 	}
+	// Find mute does already exists
+	col = s.md.Database("accounts").Collection("mutes")
+	filter = bson.M{
+		"targetType": muteStruct.TargetType,
+		"targetID":   muteStruct.TargetID,
+	}
+	if err := col.FindOne(context.Background(), filter); err != nil {
+		return response.NewConflictedError(), nil
+	}
 	// Get muteIDSeq
 	var muteIDSeq int32 = 0
 	if muteIDSeq, err = mongo_models.GetSeq(s.md, "accounts", "muteID"); err != nil {
@@ -81,36 +90,60 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 
 // DeleteMute - Delete mute
 func (s *MutesApiImplService) DeleteMute(ctx context.Context, accountID int32, muteID int32) (gen.ImplResponse, error) {
-	// TODO - update DeleteMute with the required logic for this service method.
-	// Add api_mutes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return gen.Response Response(204, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return gen.Response(204, GeneralMessageResponse{}), nil
-
-	//TODO: Uncomment the next line to return gen.Response Response(403, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return gen.Response(403, GeneralMessageResponse{}), nil
-
-	//TODO: Uncomment the next line to return gen.Response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return gen.Response(404, GeneralMessageResponse{}), nil
-
-	return gen.Response(http.StatusNotImplemented, nil), errors.New("DeleteMute method not implemented")
+	// Validate permission
+	var (
+		issuerID         int32
+		issuerPermission int32
+		err              error
+	)
+	if issuerID, err = request.GetUserID(ctx); err != nil {
+		return response.NewInternalError(), err
+	}
+	if issuerPermission, err = request.GetUserID(ctx); err != nil {
+		return response.NewInternalError(), err
+	}
+	if err := request.ValidatePermission(issuerPermission, issuerID, accountID); err != nil {
+		return response.NewPermissionErrorWithMessage(err.Error()), err
+	}
+	// Find mute
+	col := s.md.Database("accounts").Collection("mutes")
+	filter := bson.M{"muteID": muteID}
+	if err := col.FindOne(context.Background(), filter); err != nil {
+		return response.NewNotFoundError(), nil
+	}
+	// Delete mute
+	filter = bson.M{"muteID": muteID}
+	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
+		return response.NewInternalError(), err
+	}
+	return gen.Response(204, nil), nil
 }
 
 // GetMute - Get mute
 func (s *MutesApiImplService) GetMute(ctx context.Context, accountID int32, muteID int32) (gen.ImplResponse, error) {
-	// TODO - update GetMute with the required logic for this service method.
-	// Add api_mutes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return gen.Response Response(200, MuteStruct{}) or use other options such as http.Ok ...
-	//return gen.Response(200, MuteStruct{}), nil
-
-	//TODO: Uncomment the next line to return gen.Response Response(403, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return gen.Response(403, GeneralMessageResponse{}), nil
-
-	//TODO: Uncomment the next line to return gen.Response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return gen.Response(404, GeneralMessageResponse{}), nil
-
-	return gen.Response(http.StatusNotImplemented, nil), errors.New("GetMute method not implemented")
+	// Validate permission
+	var (
+		issuerID         int32
+		issuerPermission int32
+		err              error
+	)
+	if issuerID, err = request.GetUserID(ctx); err != nil {
+		return response.NewInternalError(), err
+	}
+	if issuerPermission, err = request.GetUserID(ctx); err != nil {
+		return response.NewInternalError(), err
+	}
+	if err := request.ValidatePermission(issuerPermission, issuerID, accountID); err != nil {
+		return response.NewPermissionErrorWithMessage(err.Error()), err
+	}
+	// Find mute
+	col := s.md.Database("accounts").Collection("mutes")
+	filter := bson.M{"muteID": muteID}
+	var mute mongo_models.MongoMuteStruct
+	if err := col.FindOne(context.Background(), filter).Decode(&mute); err != nil {
+		return response.NewNotFoundError(), nil
+	}
+	return gen.Response(200, mute.ToOpenApi()), nil
 }
 
 // GetMutes - Get mute list
