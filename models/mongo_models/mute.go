@@ -1,6 +1,9 @@
 package mongo_models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"github.com/UsagiBooru/accounts-server/gen"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type MongoMuteStruct struct {
 	// MongoのユニークID
@@ -14,4 +17,13 @@ type MongoMuteStruct struct {
 
 	// 対象のタグ/絵師ID
 	TargetID int32 `json:"targetID,omitempty"`
+}
+
+func (f *MongoMuteStruct) ToOpenApi() *gen.MuteStruct {
+	resp := gen.MuteStruct{
+		MuteID:     f.MuteID,
+		TargetType: f.TargetType,
+		TargetID:   f.TargetID,
+	}
+	return &resp
 }
