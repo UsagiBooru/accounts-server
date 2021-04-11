@@ -3,7 +3,6 @@ package impl
 import (
 	"context"
 	"errors"
-	"net/http"
 	"time"
 
 	"github.com/UsagiBooru/accounts-server/gen"
@@ -55,17 +54,17 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	defer cancel()
 
 	// Validate request fields
-	if resp := request.ValidateRequiredFields(
+	if err := request.ValidateRequiredFields(
 		accountStruct,
 		[]string{"name", "displayID", "password", "mail"},
-	); resp.Code != http.StatusOK {
-		return resp, nil
+	); err != nil {
+		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
-	if resp := request.ValidateRequiredFields(
+	if err := request.ValidateRequiredFields(
 		accountStruct.Invite,
 		[]string{"code"},
-	); resp.Code != http.StatusOK {
-		return resp, nil
+	); err != nil {
+		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
 
 	var account mongo_models.MongoAccountStruct
