@@ -11,6 +11,7 @@ const (
 	MessageLockedError       = "Specified content is locked and not editable."
 	MessageNotFoundError     = "Specified content was not exist."
 	MessageUnauthorizedError = "Probably your password incorrect."
+	MessageConflictedError   = "Specified content was already exists."
 	MessagePermissionError   = "You don't have enough permission to do it."
 	MessageInternalError     = "Unfortunately, the server exploded."
 )
@@ -95,6 +96,20 @@ func NewInternalError() gen.ImplResponse {
 func NewInternalErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusInternalServerError,
+		Body: gen.GeneralMessageResponse{Message: message},
+	}
+}
+
+func NewConflictedError() gen.ImplResponse {
+	return gen.ImplResponse{
+		Code: http.StatusConflict,
+		Body: gen.GeneralMessageResponse{Message: MessageInternalError},
+	}
+}
+
+func NewConflictedErrorWithMessage(message string) gen.ImplResponse {
+	return gen.ImplResponse{
+		Code: http.StatusConflict,
 		Body: gen.GeneralMessageResponse{Message: message},
 	}
 }
