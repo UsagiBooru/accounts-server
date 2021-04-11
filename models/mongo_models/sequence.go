@@ -25,7 +25,7 @@ func GetSeq(md *mongo.Client, dbName string, seqKey string) (resp int32, err err
 	filter := bson.M{"key": seqKey}
 	var seq MongoSequence
 	if err := col.FindOne(context.Background(), filter).Decode(&seq); err != nil {
-		return 0, errors.New("get sequence failed")
+		return 0, errors.New("get " + seqKey + " sequence failed")
 	}
 	return int32(seq.Value), nil
 }
