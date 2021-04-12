@@ -52,6 +52,22 @@ paths:
       summary: Create account
       tags:
       - accounts
+  /accounts/me:
+    get:
+      description: |-
+        自分自身にまつわる情報をすべて取得します
+        通常、ログイン時に一度だけ呼び出されます
+      operationId: getAccountMe
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountStruct'
+          description: OK
+      summary: Get user info (self)
+      tags:
+      - accounts
   /accounts/{accountID}:
     delete:
       description: |-
@@ -272,22 +288,6 @@ paths:
                 $ref: '#/components/schemas/GeneralMessageResponse'
           description: Not Found
       summary: Get upload history
-      tags:
-      - accounts
-  /accounts/me:
-    get:
-      description: |-
-        自分自身にまつわる情報をすべて取得します
-        通常、ログイン時に一度だけ呼び出されます
-      operationId: getAccountMe
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountStruct'
-          description: OK
-      summary: Get user info (self)
       tags:
       - accounts
   /accounts/login/form:
@@ -1522,12 +1522,14 @@ components:
           title: 香風智乃
           type: tag
         contents:
-        - artID: 1
+        - accountID: 1
+          artID: 1
           uploadID: 1
           started: 2021-02-21 22:24:22
           finished: 2021-02-21 22:24:27
           status: 5
-        - artID: 1
+        - accountID: 1
+          artID: 1
           uploadID: 1
           started: 2021-02-21 22:24:22
           finished: 2021-02-21 22:24:27
@@ -1605,11 +1607,13 @@ components:
     GetNotifyClientsResponse:
       example:
         clients:
-        - level: 5
+        - accountID: 1
+          level: 5
           name: ChinoPhone
           notifyClientID: 1
           type: webpush
-        - level: 5
+        - accountID: 1
+          level: 5
           name: ChinoPhone
           notifyClientID: 1
           type: webpush
@@ -1624,6 +1628,7 @@ components:
         example:
           clients:
           - notifyClientID: 1
+            accountID: 1
             name: ChinoPhone
             type: webpush
             level: 5
@@ -1689,6 +1694,7 @@ components:
           level: 5
     NotifyClientStruct:
       example:
+        accountID: 1
         level: 5
         name: ChinoPhone
         notifyClientID: 1
@@ -1696,6 +1702,11 @@ components:
       properties:
         notifyClientID:
           description: 通知クライアントID
+          example: 1
+          minimum: 1
+          type: integer
+        accountID:
+          description: 情報作成者のアカウントID
           example: 1
           minimum: 1
           type: integer
@@ -1732,11 +1743,13 @@ components:
       x-examples:
         example:
           notifyClientID: 1
+          accountID: 1
           name: ChinoPhone
           type: webpush
           level: 5
     NotifyConditionStruct:
       example:
+        accountID: 1
         targetID: 1
         notifyConditionID: 1
         targetMethod: all
@@ -1745,6 +1758,11 @@ components:
       properties:
         notifyConditionID:
           description: NotifyConditionID
+          example: 1
+          minimum: 1
+          type: integer
+        accountID:
+          description: 情報作成者のアカウントID
           example: 1
           minimum: 1
           type: integer
@@ -1788,6 +1806,7 @@ components:
       x-examples:
         example:
           notifyConditionID: 1
+          accountID: 1
           targetType: tag
           targetID: 1
           targetMethod: all
@@ -1802,12 +1821,14 @@ components:
           title: 香風智乃
           type: tag
         conditions:
-        - targetID: 1
+        - accountID: 1
+          targetID: 1
           notifyConditionID: 1
           targetMethod: all
           targetClient: -1
           targetType: tag
-        - targetID: 1
+        - accountID: 1
+          targetID: 1
           notifyConditionID: 1
           targetMethod: all
           targetClient: -1
@@ -1832,6 +1853,7 @@ components:
             perPage: 20
           conditions:
           - notifyConditionID: 1
+            accountID: 1
             targetType: tag
             targetID: 1
             targetMethod: all
@@ -2252,17 +2274,21 @@ components:
     GetMutesResponse:
       example:
         artists:
-        - muteID: 1
+        - accountID: 1
+          muteID: 1
           targetID: 1
           targetType: tag
-        - muteID: 1
+        - accountID: 1
+          muteID: 1
           targetID: 1
           targetType: tag
         tags:
-        - muteID: 1
+        - accountID: 1
+          muteID: 1
           targetID: 1
           targetType: tag
-        - muteID: 1
+        - accountID: 1
+          muteID: 1
           targetID: 1
           targetType: tag
       properties:
@@ -2285,17 +2311,24 @@ components:
         example:
           tags:
           - muteID: 1
+            accountID: 1
             targetType: tag
             targetID: 1
           artists: []
     MuteStruct:
       example:
+        accountID: 1
         muteID: 1
         targetID: 1
         targetType: tag
       properties:
         muteID:
           description: ミュートID
+          example: 1
+          minimum: 1
+          type: integer
+        accountID:
+          description: 情報作成者のアカウントID
           example: 1
           minimum: 1
           type: integer
@@ -2316,6 +2349,7 @@ components:
       x-examples:
         example:
           muteID: 1
+          accountID: 1
           targetID: 1
           targetType: tag
     LightAccountStruct:
@@ -2421,6 +2455,7 @@ components:
     UploadHistoryStruct:
       description: アップロード履歴
       example:
+        accountID: 1
         artID: 1
         uploadID: 1
         started: 2021-02-21 22:24:22
@@ -2431,6 +2466,11 @@ components:
           description: 通し投稿履歴番号(インデックス用)
           example: 1
           format: int32
+          minimum: 1
+          type: integer
+        accountID:
+          description: 情報作成者のアカウントID
+          example: 1
           minimum: 1
           type: integer
         started:
@@ -2473,6 +2513,7 @@ components:
       x-examples:
         example:
           uploadID: 12045
+          accountID: 1
           started: 2021-02-21 22:24:22
           finished: 2021-02-21 22:24:27
           status: 5

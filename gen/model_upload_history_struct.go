@@ -16,6 +16,9 @@ type UploadHistoryStruct struct {
 	// 通し投稿履歴番号(インデックス用)
 	UploadID int32 `json:"uploadID"`
 
+	// 情報作成者のアカウントID
+	AccountID int32 `json:"accountID,omitempty"`
+
 	// データ登録処理開始時刻
 	Started string `json:"started"`
 

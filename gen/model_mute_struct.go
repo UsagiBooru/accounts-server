@@ -15,6 +15,9 @@ type MuteStruct struct {
 	// ミュートID
 	MuteID int32 `json:"muteID,omitempty"`
 
+	// 情報作成者のアカウントID
+	AccountID int32 `json:"accountID,omitempty"`
+
 	// ミュート種別
 	TargetType string `json:"targetType,omitempty"`
 

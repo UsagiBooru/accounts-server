@@ -15,6 +15,9 @@ type NotifyClientStruct struct {
 	// 通知クライアントID
 	NotifyClientID int32 `json:"notifyClientID,omitempty"`
 
+	// 情報作成者のアカウントID
+	AccountID int32 `json:"accountID,omitempty"`
+
 	// ユーザーが指定した通知クライアント名
 	Name string `json:"name,omitempty"`
 
