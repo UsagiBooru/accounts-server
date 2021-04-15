@@ -107,6 +107,19 @@ func (h *MongoAccountHelper) DeleteAccount(accountID AccountID, deleteMethod int
 	return nil
 }
 
+func (h *MongoAccountHelper) UpdateAccount(accountID AccountID, newStruct MongoAccountStruct) error {
+	_, err := h.FindAccount(accountID)
+	if err != nil {
+		return err
+	}
+	filter := bson.M{"accountID": int32(accountID)}
+	set := bson.M{"$set": newStruct}
+	if _, err = h.col.UpdateOne(context.Background(), filter, set); err != nil {
+		return errors.New("update account failed")
+	}
+	return nil
+}
+
 func (h *MongoAccountHelper) UpdateInvite(accountID AccountID, code string, invitedCount int32) error {
 	filter := bson.M{"accountID": int32(accountID)}
 	set := bson.M{"$set": bson.M{
