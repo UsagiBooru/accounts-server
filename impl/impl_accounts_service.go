@@ -145,16 +145,9 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 
 // EditAccount - Edit account info
 func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int32, accountChange gen.AccountStruct) (gen.ImplResponse, error) {
-	// Get issuer id/permission
-	issuerID, err := request.GetUserID(ctx)
-	issuerPermission, err2 := request.GetUserPermission(ctx)
-	if err != nil || err2 != nil {
-		if err != nil {
-			server.Debug(err.Error())
-		} else {
-			server.Debug(err2.Error())
-		}
-		return response.NewInternalError(), nil
+	issuerID, issuerPermission, err := request.GetHeaders(ctx)
+	if err != nil {
+		return response.NewInternalError(), err
 	}
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")
@@ -258,16 +251,9 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 
 // DeleteAccount - Delete account info
 func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID int32, password string) (gen.ImplResponse, error) {
-	// Get issuer id/permission
-	issuerID, err := request.GetUserID(ctx)
-	issuerPermission, err2 := request.GetUserPermission(ctx)
-	if err != nil || err2 != nil {
-		if err != nil {
-			server.Debug(err.Error())
-		} else {
-			server.Debug(err2.Error())
-		}
-		return response.NewInternalError(), nil
+	issuerID, issuerPermission, err := request.GetHeaders(ctx)
+	if err != nil {
+		return response.NewInternalError(), err
 	}
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")

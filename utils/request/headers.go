@@ -38,3 +38,16 @@ func GetUserID(ctx context.Context) (int32, error) {
 	}
 	return int32(user_id_num), nil
 }
+
+// load context shorthand
+func GetHeaders(ctx context.Context) (int32, int32, error) {
+	issuerID, err := GetUserID(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	issuerPermission, err := GetUserPermission(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	return issuerID, issuerPermission, nil
+}
