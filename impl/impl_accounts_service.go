@@ -2,7 +2,6 @@ package impl
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/UsagiBooru/accounts-server/gen"
@@ -12,7 +11,6 @@ import (
 	"github.com/UsagiBooru/accounts-server/utils/server"
 	jwt "github.com/form3tech-oss/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -67,144 +65,72 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
 
-	var account mongo_models.MongoAccountStruct
+	// Create helpers
+	var account *mongo_models.MongoAccountStruct
 	// Use transaction to prevent duplicate request
 	err := s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
-		// Start transaction
 		err := sc.StartTransaction()
 		if err != nil {
 			return err
 		}
-		// Find invite code
-		col := s.md.Database("accounts").Collection("invites")
-		filter := bson.M{
-			"code":    accountStruct.Invite.Code,
-			"invitee": 0,
+		// Create helpers
+		inviteHelper := mongo_models.NewMongoInviteHelper(s.md)
+		accountHelper := mongo_models.NewMongoAccountHelper(s.md)
+		accountSequenceHelper := mongo_models.NewMongoSequenceHelper(s.md, "accounts", "accountID")
+		// Get latest -1 accountID
+		seq, err := accountSequenceHelper.GetSeq()
+		if err != nil {
+			return err
 		}
-		var invite mongo_models.MongoInvite
-		if err := col.FindOne(context.Background(), filter).Decode(&invite); err != nil {
-			return errors.New("invite code was not found")
+		if err := accountSequenceHelper.UpdateSeq(); err != nil {
+			return err
+		}
+		// Get invite info
+		invite, err := inviteHelper.FindInvite(accountStruct.Invite.Code)
+		if err != nil {
+			return err
 		}
 		// Find inviter account
-		col = s.md.Database("accounts").Collection("users")
-		filter = bson.M{"accountID": invite.Inviter}
-		var inviter mongo_models.MongoAccountStruct
-		if err := col.FindOne(context.Background(), filter).Decode(&inviter); err != nil {
-			server.Debug(err.Error())
-			return errors.New("inviter account was not found")
+		inviterAccountID := invite.Inviter
+		newAccountID := mongo_models.AccountID(seq + 1)
+		inviter, err := accountHelper.FindAccount(inviterAccountID)
+		if err != nil {
+			return err
 		}
-		// Get latest-1 accountID
-		col = s.md.Database("accounts").Collection("sequence")
-		filter = bson.M{"key": "accountID"}
-		var seq mongo_models.MongoSequence
-		if err := col.FindOne(context.Background(), filter).Decode(&seq); err != nil {
-			return errors.New("accountID sequence was not found")
+		// Use invite code
+		if err := inviteHelper.UseInvite(invite.ID, newAccountID); err != nil {
+			return err
 		}
-		// Update invite invitee
-		col = s.md.Database("accounts").Collection("invites")
-		filter = bson.M{
-			"_id": invite.ID,
+		// Generate new invite for new account
+		inviteCodeForNew := server.GetShortUUID(8)
+		if err := inviteHelper.CreateInvite(inviteCodeForNew, newAccountID); err != nil {
+			return err
 		}
-		set := bson.M{"$set": bson.M{"invitee": seq.Value + 1}}
-		if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-			return errors.New("update invite invitee failed")
+		// Generate new invite for inviter account
+		inviteCodeForInviter := server.GetShortUUID(8)
+		if err := inviteHelper.CreateInvite(inviteCodeForInviter, inviterAccountID); err != nil {
+			return err
 		}
-		// Get password hash
-		hashedPassword, err := bcrypt.GenerateFromPassword(
-			[]byte(accountStruct.Password),
-			bcrypt.DefaultCost,
+		// Create new account
+		account, err = accountHelper.CreateAccount(
+			newAccountID,
+			accountStruct.DisplayID,
+			accountStruct.Password,
+			accountStruct.Mail,
+			accountStruct.Name,
+			inviterAccountID,
+			inviteCodeForNew,
 		)
 		if err != nil {
-			return errors.New("password hash create failed")
-		}
-		// Create new invite for new account
-		newInviteCodeForNew := server.GetShortUUID(8)
-		newInviteForNew := mongo_models.MongoInvite{
-			ID:      primitive.NewObjectID(),
-			Code:    newInviteCodeForNew,
-			Inviter: seq.Value + 1,
-			Invitee: 0,
-		}
-		if _, err = col.InsertOne(ctx, newInviteForNew); err != nil {
-			return errors.New("insert new invite for new account failed")
-		}
-		// Create new invite for old account
-		newInviteCodeForOld := server.GetShortUUID(8)
-		newInviteForOld := mongo_models.MongoInvite{
-			ID:      primitive.NewObjectID(),
-			Code:    newInviteCodeForOld,
-			Inviter: invite.Inviter,
-		}
-		if _, err = col.InsertOne(ctx, newInviteForOld); err != nil {
-			return errors.New("insert new invite for old account failed")
-		}
-		// Create new mongo user model
-		col = s.md.Database("accounts").Collection("users")
-		account = mongo_models.MongoAccountStruct{
-			ID:            primitive.NewObjectID(),
-			AccountStatus: 0,
-			AccountID:     seq.Value + 1,
-			DisplayID:     accountStruct.DisplayID,
-			ApiKey:        "",
-			ApiSeq:        0,
-			Permission:    0,
-			Password:      string(hashedPassword),
-			Mail:          accountStruct.Mail,
-			TotpCode:      "",
-			TotpEnabled:   false,
-			Name:          accountStruct.Name,
-			Description:   "",
-			Favorite:      0,
-			Access: mongo_models.MongoAccountStructAccess{
-				CanInvite:      true,
-				CanLike:        true,
-				CanComment:     true,
-				CanCreatePost:  true,
-				CanEditPost:    false,
-				CanApprovePost: false,
-			},
-			Inviter: mongo_models.LightMongoAccountStruct{
-				AccountID: invite.Inviter,
-			},
-			Invite: mongo_models.MongoAccountStructInvite{
-				InvitedCount: -1,
-				Code:         newInviteCodeForNew,
-			},
-			Notify: mongo_models.MongoAccountStructNotify{
-				HasLineNotify: false,
-				HasWebNotify:  false,
-			},
-			Ipfs: mongo_models.MongoAccountStructIpfs{
-				GatewayUrl:     "https://cloudflare-ipfs.com",
-				NodeUrl:        "",
-				GatewayEnabled: false,
-				NodeEnabled:    false,
-				PinEnabled:     false,
-			},
-		}
-		// Insert new user
-		if _, err = col.InsertOne(ctx, account); err != nil {
-			return errors.New("insert new account failed")
-		}
-		// Update sequence
-		col = s.md.Database("accounts").Collection("sequence")
-		filter = bson.M{"key": "accountID"}
-		set = bson.M{"$set": bson.M{"value": seq.Value + 1}}
-		if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-			return errors.New("update accountID sequence failed")
+			return err
 		}
 		// Update inviter's invite count
-		col = s.md.Database("accounts").Collection("users")
-		filter = bson.M{"accountID": invite.Inviter}
-		if inviter.Invite.InvitedCount == -1 {
-			inviter.Invite.InvitedCount = 0
-		}
-		set = bson.M{"$set": bson.M{
-			"invite.invitedCount": inviter.Invite.InvitedCount + 1,
-			"invite.code":         newInviteCodeForOld,
-		}}
-		if _, err := col.UpdateOne(ctx, filter, set); err != nil {
-			return errors.New("update inviter's invite count failed")
+		if err := accountHelper.UpdateInvite(
+			inviterAccountID,
+			inviteCodeForInviter,
+			inviter.Invite.InvitedCount+1,
+		); err != nil {
+			return err
 		}
 		// Commit insert user / update sequence / update invite code
 		return sc.CommitTransaction(sc)

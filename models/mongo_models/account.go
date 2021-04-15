@@ -18,6 +18,8 @@ const (
 	STATUS_DELETED_MOD  = 2
 )
 
+type AccountID int32
+
 // MongoAccountStructNotify - 通知クライアントを設定済みか
 type MongoAccountStructNotify struct {
 	HasLineNotify bool `bson:"hasLineNotify,omitempty"`
@@ -80,7 +82,7 @@ type MongoAccountStructIpfs struct {
 type LightMongoAccountStruct struct {
 
 	// アカウントID
-	AccountID int32 `bson:"accountID,omitempty"`
+	AccountID AccountID `bson:"accountID,omitempty"`
 
 	// アカウント名
 	Name string `bson:"name,omitempty"`
@@ -95,7 +97,7 @@ type MongoAccountStruct struct {
 	AccountStatus int32 `bson:"accountStatus,omitempty"`
 
 	// ユーザーID
-	AccountID int32 `json:"accountID,omitempty" bson:"accountID,omitempty"`
+	AccountID AccountID `json:"accountID,omitempty" bson:"accountID,omitempty"`
 
 	// (Twitterのような)表示IDを指定します。ここで指定したIDがログインに使用されます。英数字のみ入力できます。
 	DisplayID string `bson:"displayID,omitempty"`
@@ -257,8 +259,12 @@ func (f *MongoAccountStruct) ToOpenApi(md *mongo.Client) (ac *gen.AccountStruct)
 		server.Debug(err.Error())
 		return nil
 	}
+	inviterResp := gen.LightAccountStruct{
+		AccountID: int32(inviter.AccountID),
+		Name:      inviter.Name,
+	}
 	resp := gen.AccountStruct{
-		AccountID:   f.AccountID,
+		AccountID:   int32(f.AccountID),
 		DisplayID:   f.DisplayID,
 		Permission:  f.Permission,
 		ApiSeq:      f.ApiSeq,
@@ -267,7 +273,7 @@ func (f *MongoAccountStruct) ToOpenApi(md *mongo.Client) (ac *gen.AccountStruct)
 		Name:        f.Name,
 		Description: f.Description,
 		Access:      gen.AccountStructAccess(f.Access),
-		Inviter:     gen.LightAccountStruct(inviter),
+		Inviter:     inviterResp,
 		Invite:      gen.AccountStructInvite(f.Invite),
 		Ipfs:        gen.AccountStructIpfs(f.Ipfs),
 	}

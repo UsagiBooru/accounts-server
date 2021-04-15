@@ -67,22 +67,22 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 		return response.NewConflictedError(), nil
 	}
 	// Get muteIDSeq
-	var muteIDSeq int32 = 0
-	if muteIDSeq, err = mongo_models.GetSeq(s.md, "accounts", "muteID"); err != nil {
+	muteSequenceHelper := mongo_models.NewMongoSequenceHelper(s.md, "accounts", "muteID")
+	seq, err := muteSequenceHelper.GetSeq()
+	if err != nil {
 		return response.NewInternalError(), err
 	}
 	// Create new mute
 	newMute := mongo_models.MongoMuteStruct{
 		ID:         primitive.NewObjectID(),
-		MuteID:     muteIDSeq + 1,
+		MuteID:     seq + 1,
 		TargetType: muteStruct.TargetType,
 		TargetID:   muteStruct.TargetID,
 	}
 	if _, err = col.InsertOne(ctx, newMute); err != nil {
 		return response.NewInternalError(), errors.New("insert new mute failed")
 	}
-	// Update muteIDSeq
-	if err = mongo_models.UpdateSeq(s.md, "accounts", "muteID", muteIDSeq); err != nil {
+	if err := muteSequenceHelper.UpdateSeq(); err != nil {
 		return response.NewInternalError(), err
 	}
 	return gen.Response(200, newMute.ToOpenApi()), nil
