@@ -19,15 +19,20 @@ type AccountsApiImplService struct {
 	gen.AccountsApiService
 	// es *elasticsearch.Client
 	md        *mongo.Client
+	ih        mongo_models.MongoInviteHelper
+	ah        mongo_models.MongoAccountHelper
 	jwtSecret string
 }
 
 func NewAccountsApiImplService() gen.AccountsApiServicer {
 	conf := server.GetConfig()
+	md := server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
 	return &AccountsApiImplService{
 		AccountsApiService: gen.AccountsApiService{},
 		// es:                 server.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
-		md:        server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
+		md:        md,
+		ih:        mongo_models.NewMongoInviteHelper(md),
+		ah:        mongo_models.NewMongoAccountHelper(md),
 		jwtSecret: conf.JwtSecret,
 	}
 }
@@ -35,11 +40,8 @@ func NewAccountsApiImplService() gen.AccountsApiServicer {
 // GetAccount - Get account info
 func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32) (gen.ImplResponse, error) {
 	// Find target account
-	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"accountID": accountID}
-	var account mongo_models.MongoAccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		server.Debug(err.Error())
+	account, err := s.ah.FindAccount(mongo_models.AccountID(accountID))
+	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
@@ -64,8 +66,6 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	); err != nil {
 		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
-
-	// Create helpers
 	var account *mongo_models.MongoAccountStruct
 	// Use transaction to prevent duplicate request
 	err := s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
@@ -73,9 +73,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		if err != nil {
 			return err
 		}
-		// Create helpers
-		inviteHelper := mongo_models.NewMongoInviteHelper(s.md)
-		accountHelper := mongo_models.NewMongoAccountHelper(s.md)
+		// Create sequence helper
 		accountSequenceHelper := mongo_models.NewMongoSequenceHelper(s.md, "accounts", "accountID")
 		// Get latest -1 accountID
 		seq, err := accountSequenceHelper.GetSeq()
@@ -86,33 +84,33 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			return err
 		}
 		// Get invite info
-		invite, err := inviteHelper.FindInvite(accountStruct.Invite.Code)
+		invite, err := s.ih.FindInvite(accountStruct.Invite.Code)
 		if err != nil {
 			return err
 		}
 		// Find inviter account
 		inviterAccountID := invite.Inviter
 		newAccountID := mongo_models.AccountID(seq + 1)
-		inviter, err := accountHelper.FindAccount(inviterAccountID)
+		inviter, err := s.ah.FindAccount(inviterAccountID)
 		if err != nil {
 			return err
 		}
 		// Use invite code
-		if err := inviteHelper.UseInvite(invite.ID, newAccountID); err != nil {
+		if err := s.ih.UseInvite(invite.ID, newAccountID); err != nil {
 			return err
 		}
 		// Generate new invite for new account
 		inviteCodeForNew := server.GetShortUUID(8)
-		if err := inviteHelper.CreateInvite(inviteCodeForNew, newAccountID); err != nil {
+		if err := s.ih.CreateInvite(inviteCodeForNew, newAccountID); err != nil {
 			return err
 		}
 		// Generate new invite for inviter account
 		inviteCodeForInviter := server.GetShortUUID(8)
-		if err := inviteHelper.CreateInvite(inviteCodeForInviter, inviterAccountID); err != nil {
+		if err := s.ih.CreateInvite(inviteCodeForInviter, inviterAccountID); err != nil {
 			return err
 		}
 		// Create new account
-		account, err = accountHelper.CreateAccount(
+		account, err = s.ah.CreateAccount(
 			newAccountID,
 			accountStruct.DisplayID,
 			accountStruct.Password,
@@ -125,7 +123,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			return err
 		}
 		// Update inviter's invite count
-		if err := accountHelper.UpdateInvite(
+		if err := s.ah.UpdateInvite(
 			inviterAccountID,
 			inviteCodeForInviter,
 			inviter.Invite.InvitedCount+1,
@@ -150,11 +148,8 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 		return response.NewInternalError(), err
 	}
 	// Find target account
-	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"accountID": accountID}
-	var accountCurrent mongo_models.MongoAccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&accountCurrent); err != nil {
-		server.Debug(err.Error())
+	accountCurrent, err := s.ah.FindAccount(mongo_models.AccountID(accountID))
+	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
 
@@ -256,13 +251,10 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 		return response.NewInternalError(), err
 	}
 	// Find target account
-	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"accountID": accountID}
-	var account mongo_models.MongoAccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
+	account, err := s.ah.FindAccount(mongo_models.AccountID(accountID))
+	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
-
 	// Validate permission
 	notMod := issuerPermission < request.PermissionModerator
 	if accountID != issuerID && notMod {
@@ -281,7 +273,8 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 	} else {
 		account.AccountStatus = mongo_models.STATUS_DELETED_MOD
 	}
-	filter = bson.M{"accountID": account.AccountID}
+	col := s.md.Database("accounts").Collection("users")
+	filter := bson.M{"accountID": account.AccountID}
 	set := bson.M{"$set": account}
 	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
 		server.Debug(err.Error())
@@ -345,13 +338,9 @@ func (s *AccountsApiImplService) GetAccountMe(ctx context.Context) (gen.ImplResp
 		server.Debug(err.Error())
 		return response.NewInternalError(), nil
 	}
-
 	// Find target account
-	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"accountID": issuerID}
-	var account mongo_models.MongoAccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		server.Debug(err.Error())
+	account, err := s.ah.FindAccount(mongo_models.AccountID(issuerID))
+	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
