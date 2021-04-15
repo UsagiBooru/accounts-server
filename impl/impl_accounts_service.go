@@ -203,6 +203,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	}
 
 	/* Update using input */
+	col := s.md.Database("accounts").Collection("users")
 	if err := accountCurrent.UpdateDisplayID(col, accountChange.DisplayID); err != nil {
 		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
@@ -233,9 +234,8 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if err := accountCurrent.UpdateIpfs(accountChange.Ipfs); err != nil {
 		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
-
 	// Update account
-	filter = bson.M{"accountID": accountCurrent.AccountID}
+	filter := bson.M{"accountID": accountCurrent.AccountID}
 	set := bson.M{"$set": accountCurrent}
 	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
 		server.Debug(err.Error())
