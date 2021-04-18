@@ -245,11 +245,8 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
 	// Update account
-	filter := bson.M{"accountID": accountCurrent.AccountID}
-	set := bson.M{"$set": accountCurrent}
-	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-		server.Debug(err.Error())
-		return response.NewInternalError(), nil
+	if err := s.ah.UpdateAccount(mongo_models.AccountID(accountID), *accountCurrent); err != nil {
+		return response.NewInternalError(), err
 	}
 	return gen.Response(200, accountCurrent.ToOpenApi(s.md)), nil
 }
