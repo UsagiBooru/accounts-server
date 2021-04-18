@@ -8,9 +8,9 @@ type MongoSequence struct {
 	// MongoのユニークID
 	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 
-	// 招待の発行者ID
-	Key string `json:"key" bson:"key"`
+	// シーケンスのキー
+	Key string `json:"key" bson:"key" validate:"alphanum,min=1,max=32"`
 
-	// 招待の利用者ID
-	Value int32 `json:"value" bson:"value"`
+	// シーケンスの現在値
+	Value int32 `json:"value" bson:"value" validate:"gte=0"`
 }

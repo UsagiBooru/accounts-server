@@ -31,13 +31,13 @@ type MongoAccountStructNotify struct {
 type MongoAccountStructInvite struct {
 
 	// 招待通し番号
-	InviteID int32 `bson:"inviteID,omitempty"`
+	InviteID int32 `bson:"inviteID,omitempty" validate:"gte=0"`
 
 	// 招待コード(shortuuid)
-	Code string `bson:"code,omitempty"`
+	Code string `bson:"code,omitempty" validate:"alphanum,min=4,max=12"`
 
 	// 招待した人数の累計(誰を招待したかは表示されない)
-	InvitedCount int32 `bson:"invitedCount,omitempty"`
+	InvitedCount int32 `bson:"invitedCount,omitempty" validate:"gte=0"`
 }
 
 type MongoAccountStructAccess struct {
@@ -64,10 +64,10 @@ type MongoAccountStructAccess struct {
 type MongoAccountStructIpfs struct {
 
 	// 使用する任意のゲートウェイアドレス
-	GatewayUrl string `bson:"gatewayUrl,omitempty"`
+	GatewayUrl string `bson:"gatewayUrl,omitempty" validate:"url,max=100"`
 
 	// 使用する任意のノードアドレス
-	NodeUrl string `bson:"nodeUrl,omitempty"`
+	NodeUrl string `bson:"nodeUrl,omitempty" validate:"url,max=100"`
 
 	// IPFSゲートウェイを使用するか否か
 	GatewayEnabled bool `bson:"gatewayEnabled,omitempty"`
@@ -94,28 +94,28 @@ type MongoAccountStruct struct {
 	ID primitive.ObjectID `bson:"_id,omitempty"`
 
 	// アカウント状態 0:通常 1:ユーザー削除 2:管理者削除
-	AccountStatus int32 `bson:"accountStatus,omitempty"`
+	AccountStatus int32 `bson:"accountStatus,omitempty" validate:"gte=0,lte=2"`
 
 	// ユーザーID
-	AccountID AccountID `json:"accountID,omitempty" bson:"accountID,omitempty"`
+	AccountID AccountID `json:"accountID,omitempty" bson:"accountID,omitempty" validate:"gte=0"`
 
 	// (Twitterのような)表示IDを指定します。ここで指定したIDがログインに使用されます。英数字のみ入力できます。
-	DisplayID string `bson:"displayID,omitempty"`
+	DisplayID string `bson:"displayID,omitempty" validate:"alphanum,min=3,max=20"`
 
 	// APIキー
-	ApiKey string `bson:"apiKey,omitempty"`
+	ApiKey string `bson:"apiKey,omitempty" validate:"min=1,max=500"`
 
 	// 長期間有効トークン検証用シーケンス
-	ApiSeq int32 `bson:"apiSeq,omitempty"`
+	ApiSeq int32 `bson:"apiSeq,omitempty" validate:"gte=0"`
 
 	// 権限レベル 0:普通 5:Modelator 9:SysOp
-	Permission int32 `bson:"permission,omitempty"`
+	Permission int32 `bson:"permission,omitempty" validate:"gte=0,lte=9"`
 
 	// 新しいパスワードを入力します
-	Password string `bson:"password,omitempty"`
+	Password string `bson:"password,omitempty" validate:"alphanum,min=6,max=100"`
 
 	// ユーザーのメールアドレス(連絡用)
-	Mail string `bson:"mail,omitempty"`
+	Mail string `bson:"mail,omitempty" validate:"mail,max=80"`
 
 	// TOTP認証用パスワード
 	TotpCode string `bson:"totpCode,omitempty"`
@@ -124,13 +124,13 @@ type MongoAccountStruct struct {
 	TotpEnabled bool `bson:"totpEnabled,omitempty"`
 
 	// 他のユーザーに表示されるユーザー名/投稿者名
-	Name string `bson:"name,omitempty"`
+	Name string `bson:"name,omitempty" validate:"alphanumunicode,min=1,max=20"`
 
 	// 他のユーザーに表示されるユーザー説明文/投稿者説明
-	Description string `bson:"description,omitempty"`
+	Description string `bson:"description,omitempty" validate:"alphanumunicode,min=0,max=1000"`
 
 	// ユーザーの推しキャラ(タグID)を選択します
-	Favorite int32 `bson:"favorite,omitempty"`
+	Favorite int32 `bson:"favorite,omitempty" validate:"gte=0"`
 
 	Access MongoAccountStructAccess `bson:"access,omitempty"`
 

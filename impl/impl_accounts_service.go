@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type AccountsApiImplService struct {
@@ -21,6 +22,7 @@ type AccountsApiImplService struct {
 	md        *mongo.Client
 	ih        mongo_models.MongoInviteHelper
 	ah        mongo_models.MongoAccountHelper
+	validate  *validator.Validate
 	jwtSecret string
 }
 
@@ -33,6 +35,7 @@ func NewAccountsApiImplService() gen.AccountsApiServicer {
 		md:        md,
 		ih:        mongo_models.NewMongoInviteHelper(md),
 		ah:        mongo_models.NewMongoAccountHelper(md),
+		validate:  validator.New(),
 		jwtSecret: conf.JwtSecret,
 	}
 }
@@ -52,7 +55,11 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	// Timeout of this method is 3 seconds
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-
+	// Validate struct
+	err := s.validate.Struct(accountStruct)
+	if err != nil {
+		return response.NewRequestErrorWithMessage(err.Error()), nil
+	}
 	// Validate request fields
 	if err := request.ValidateRequiredFields(
 		accountStruct,
@@ -68,7 +75,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	}
 	var account *mongo_models.MongoAccountStruct
 	// Use transaction to prevent duplicate request
-	err := s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
+	err = s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
 		err := sc.StartTransaction()
 		if err != nil {
 			return err
@@ -146,6 +153,11 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	issuerID, issuerPermission, err := request.GetHeaders(ctx)
 	if err != nil {
 		return response.NewInternalError(), err
+	}
+	// Validate struct
+	err = s.validate.Struct(accountChange)
+	if err != nil {
+		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
 	// Find target account
 	accountCurrent, err := s.ah.FindAccount(mongo_models.AccountID(accountID))
