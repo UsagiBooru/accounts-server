@@ -152,7 +152,6 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
-
 	/* Validate Permission */
 	notAdmin := issuerPermission != request.PermissionAdmin
 	notMod := issuerPermission < request.PermissionModerator
@@ -201,8 +200,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 		server.Debug("Denied since changing mail with not admin and target wasn't ownself")
 		return response.NewPermissionError(), nil
 	}
-
-	/* Update using input */
+	// Update using input
 	col := s.md.Database("accounts").Collection("users")
 	if err := accountCurrent.UpdateDisplayID(col, accountChange.DisplayID); err != nil {
 		return response.NewLockedErrorWithMessage(err.Error()), nil
@@ -266,19 +264,14 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 			return response.NewPermissionErrorWithMessage("password mismatched"), nil
 		}
 	}
-
 	// Update account
 	if issuerPermission == request.PermissionUser {
 		account.AccountStatus = mongo_models.STATUS_DELETED_SELF
 	} else {
 		account.AccountStatus = mongo_models.STATUS_DELETED_MOD
 	}
-	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"accountID": account.AccountID}
-	set := bson.M{"$set": account}
-	if _, err = col.UpdateOne(ctx, filter, set); err != nil {
-		server.Debug(err.Error())
-		return response.NewInternalError(), nil
+	if err := s.ah.UpdateAccount(mongo_models.AccountID(accountID), *account); err != nil {
+		return response.NewInternalError(), err
 	}
 	return gen.Response(204, nil), nil
 }
@@ -287,7 +280,6 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.PostLoginWithFormRequest) (gen.ImplResponse, error) {
 	accountIdOrMail := req.Id
 	accountPassword := req.Password
-
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")
 	filter := bson.M{"displayID": accountIdOrMail}
@@ -298,12 +290,10 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 	if err := account.ValidatePassword(accountPassword); err != nil {
 		return response.NewUnauthorizedError(), nil
 	}
-
 	// Deny if account deleted
 	if account.AccountStatus != mongo_models.STATUS_NORMAL {
 		return response.NewLockedErrorWithMessage("the account was deleted"), nil
 	}
-
 	// Generate jwt token
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -317,7 +307,6 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 	if err != nil {
 		return response.NewInternalError(), nil
 	}
-
 	return gen.Response(200, gen.PostLoginWithFormResponse{ApiKey: signed_token}), nil
 }
 
