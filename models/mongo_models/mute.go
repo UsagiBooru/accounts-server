@@ -9,6 +9,9 @@ type MongoMuteStruct struct {
 	// MongoのユニークID
 	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 
+	// ユーザーID
+	AccountID AccountID `json:"accountID,omitempty" bson:"accountID,omitempty" validate:"gte=0"`
+
 	// ミュートID
 	MuteID int32 `json:"muteID,omitempty" validate:"gte=0"`
 
@@ -22,6 +25,7 @@ type MongoMuteStruct struct {
 func (f *MongoMuteStruct) ToOpenApi() *gen.MuteStruct {
 	resp := gen.MuteStruct{
 		MuteID:     f.MuteID,
+		AccountID:  int32(f.AccountID),
 		TargetType: f.TargetType,
 		TargetID:   f.TargetID,
 	}

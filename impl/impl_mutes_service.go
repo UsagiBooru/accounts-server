@@ -11,35 +11,32 @@ import (
 	"github.com/UsagiBooru/accounts-server/utils/response"
 	"github.com/UsagiBooru/accounts-server/utils/server"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type MutesApiImplService struct {
 	gen.MutesApiService
 	md *mongo.Client
+	ah mongo_models.MongoAccountHelper
+	mh mongo_models.MongoMuteHelper
 }
 
 func NewMutesApiImplService() gen.MutesApiServicer {
 	conf := server.GetConfig()
+	md := server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
 	return &MutesApiImplService{
 		MutesApiService: gen.MutesApiService{},
-		md:              server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass),
+		md:              md,
+		ah:              mongo_models.NewMongoAccountHelper(md),
+		mh:              mongo_models.NewMongoMuteHelper(md),
 	}
 }
 
 // AddMute - Add mute
 func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, muteStruct gen.MuteStruct) (gen.ImplResponse, error) {
-	// Get issuer id/permission
-	var (
-		issuerID         int32
-		issuerPermission int32
-		err              error
-	)
-	if issuerID, err = request.GetUserID(ctx); err != nil {
-		return response.NewInternalError(), err
-	}
-	if issuerPermission, err = request.GetUserID(ctx); err != nil {
+	// Get issuerId/ issuerPermission
+	issuerID, issuerPermission, err := request.GetHeaders(ctx)
+	if err != nil {
 		return response.NewInternalError(), err
 	}
 	// Validate request
@@ -51,19 +48,17 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 		return response.NewPermissionErrorWithMessage(err.Error()), err
 	}
 	// Find target account
-	col := s.md.Database("accounts").Collection("users")
-	filter := bson.M{"accountID": accountID}
-	var account mongo_models.MongoAccountStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
+	_, err = s.ah.FindAccount(mongo_models.AccountID(issuerID))
+	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
 	// Find mute does already exists
-	col = s.md.Database("accounts").Collection("mutes")
-	filter = bson.M{
+	filter := bson.M{
 		"targetType": muteStruct.TargetType,
 		"targetID":   muteStruct.TargetID,
 	}
-	if err := col.FindOne(context.Background(), filter); err != nil {
+	_, err = s.mh.FindMuteUsingFilter(filter)
+	if err == nil {
 		return response.NewConflictedError(), nil
 	}
 	// Get muteIDSeq
@@ -73,15 +68,15 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 		return response.NewInternalError(), err
 	}
 	// Create new mute
-	newMute := mongo_models.MongoMuteStruct{
-		ID:         primitive.NewObjectID(),
-		MuteID:     seq + 1,
-		TargetType: muteStruct.TargetType,
-		TargetID:   muteStruct.TargetID,
+	newMute, err := s.mh.CreateMute(
+		seq+1,
+		muteStruct.TargetType,
+		muteStruct.TargetID,
+	)
+	if err != nil {
+		return response.NewInternalError(), err
 	}
-	if _, err = col.InsertOne(ctx, newMute); err != nil {
-		return response.NewInternalError(), errors.New("insert new mute failed")
-	}
+	// Update seq
 	if err := muteSequenceHelper.UpdateSeq(); err != nil {
 		return response.NewInternalError(), err
 	}
@@ -90,57 +85,40 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 
 // DeleteMute - Delete mute
 func (s *MutesApiImplService) DeleteMute(ctx context.Context, accountID int32, muteID int32) (gen.ImplResponse, error) {
-	// Validate permission
-	var (
-		issuerID         int32
-		issuerPermission int32
-		err              error
-	)
-	if issuerID, err = request.GetUserID(ctx); err != nil {
-		return response.NewInternalError(), err
-	}
-	if issuerPermission, err = request.GetUserID(ctx); err != nil {
+	// Get issuerId/ issuerPermission
+	issuerID, issuerPermission, err := request.GetHeaders(ctx)
+	if err != nil {
 		return response.NewInternalError(), err
 	}
 	if err := request.ValidatePermission(issuerPermission, issuerID, accountID); err != nil {
 		return response.NewPermissionErrorWithMessage(err.Error()), err
 	}
 	// Find mute
-	col := s.md.Database("accounts").Collection("mutes")
-	filter := bson.M{"muteID": muteID}
-	if err := col.FindOne(context.Background(), filter); err != nil {
+	_, err = s.mh.FindMute(muteID)
+	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
 	// Delete mute
-	filter = bson.M{"muteID": muteID}
-	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
-		return response.NewInternalError(), err
+	err = s.mh.DeleteMute(muteID)
+	if err != nil {
+		return response.NewInternalError(), nil
 	}
 	return gen.Response(204, nil), nil
 }
 
 // GetMute - Get mute
 func (s *MutesApiImplService) GetMute(ctx context.Context, accountID int32, muteID int32) (gen.ImplResponse, error) {
-	// Validate permission
-	var (
-		issuerID         int32
-		issuerPermission int32
-		err              error
-	)
-	if issuerID, err = request.GetUserID(ctx); err != nil {
-		return response.NewInternalError(), err
-	}
-	if issuerPermission, err = request.GetUserID(ctx); err != nil {
+	// Get issuerId/ issuerPermission
+	issuerID, issuerPermission, err := request.GetHeaders(ctx)
+	if err != nil {
 		return response.NewInternalError(), err
 	}
 	if err := request.ValidatePermission(issuerPermission, issuerID, accountID); err != nil {
 		return response.NewPermissionErrorWithMessage(err.Error()), err
 	}
 	// Find mute
-	col := s.md.Database("accounts").Collection("mutes")
-	filter := bson.M{"muteID": muteID}
-	var mute mongo_models.MongoMuteStruct
-	if err := col.FindOne(context.Background(), filter).Decode(&mute); err != nil {
+	mute, err := s.mh.FindMute(muteID)
+	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, mute.ToOpenApi()), nil
@@ -148,9 +126,14 @@ func (s *MutesApiImplService) GetMute(ctx context.Context, accountID int32, mute
 
 // GetMutes - Get mute list
 func (s *MutesApiImplService) GetMutes(ctx context.Context, accountID int32) (gen.ImplResponse, error) {
-	// TODO - update GetMutes with the required logic for this service method.
-	// Add api_mutes_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
+	// Get issuerId/ issuerPermission
+	issuerID, issuerPermission, err := request.GetHeaders(ctx)
+	if err != nil {
+		return response.NewInternalError(), err
+	}
+	if err := request.ValidatePermission(issuerPermission, issuerID, accountID); err != nil {
+		return response.NewPermissionErrorWithMessage(err.Error()), err
+	}
 	//TODO: Uncomment the next line to return gen.Response Response(200, GetMutesResponse{}) or use other options such as http.Ok ...
 	//return gen.Response(200, GetMutesResponse{}), nil
 
