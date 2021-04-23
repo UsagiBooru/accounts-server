@@ -80,7 +80,7 @@ func ReGenerateTestDatabase() error {
 	col = m.Database("accounts").Collection("invites")
 	invite := mongo_models.MongoInvite{
 		ID:      primitive.NewObjectID(),
-		Code:    "dev",
+		Code:    "devcode1",
 		Inviter: 1,
 		Invitee: 0,
 	}

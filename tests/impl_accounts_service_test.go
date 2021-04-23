@@ -68,11 +68,11 @@ func TestCreateAccount(t *testing.T) {
 	defer s.Close()
 	newAccount := gen.AccountStruct{
 		Name:      "デバッグアカウント",
-		DisplayID: "debug_account",
-		Password:  "debug_account",
+		DisplayID: "debugaccount",
+		Password:  "debugaccount",
 		Mail:      "mail@example.com",
 		Invite: gen.AccountStructInvite{
-			Code: "dev",
+			Code: "devcode1",
 		},
 	}
 	user_json, err := json.Marshal(newAccount)
