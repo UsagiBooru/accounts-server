@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/UsagiBooru/accounts-server/gen"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,6 +19,47 @@ func NewMongoAccountHelper(md *mongo.Client) MongoAccountHelper {
 	return MongoAccountHelper{
 		md.Database("accounts").Collection("users"),
 	}
+}
+
+func (h *MongoAccountHelper) ToMongo(ac gen.AccountStruct) MongoAccountStruct {
+	inviterResp := LightMongoAccountStruct{
+		AccountID: AccountID(ac.AccountID),
+		Name:      ac.Name,
+	}
+	inviteResp := MongoAccountStructInvite{
+		InviteID:     ac.Invite.InviteID,
+		Code:         ac.Invite.Code,
+		InvitedCount: ac.Invite.InvitedCount,
+	}
+	ipfsResp := MongoAccountStructIpfs{
+		GatewayUrl:     ac.Ipfs.GatewayUrl,
+		NodeUrl:        ac.Ipfs.NodeUrl,
+		GatewayEnabled: ac.Ipfs.GatewayEnabled,
+		NodeEnabled:    ac.Ipfs.NodeEnabled,
+		PinEnabled:     ac.Ipfs.PinEnabled,
+	}
+	resp := MongoAccountStruct{
+		ID:            [12]byte{},
+		AccountStatus: 0,
+		AccountID:     AccountID(ac.AccountID),
+		DisplayID:     ac.DisplayID,
+		ApiKey:        "",
+		ApiSeq:        ac.ApiSeq,
+		Permission:    ac.Permission,
+		Password:      ac.Password,
+		Mail:          ac.Mail,
+		TotpCode:      "",
+		TotpEnabled:   ac.TotpEnabled,
+		Name:          ac.Name,
+		Description:   ac.Description,
+		Favorite:      ac.Favorite,
+		Access:        MongoAccountStructAccess(ac.Access),
+		Inviter:       inviterResp,
+		Invite:        inviteResp,
+		Notify:        MongoAccountStructNotify{},
+		Ipfs:          ipfsResp,
+	}
+	return resp
 }
 
 func (h *MongoAccountHelper) CreateAccount(

@@ -56,7 +56,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	// Validate struct
-	err := s.validate.Struct(accountStruct)
+	err := s.validate.Struct(s.ah.ToMongo(accountStruct))
 	if err != nil {
 		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
@@ -155,7 +155,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 		return response.NewInternalError(), err
 	}
 	// Validate struct
-	err = s.validate.Struct(accountChange)
+	err = s.validate.Struct(s.ah.ToMongo(accountChange))
 	if err != nil {
 		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
