@@ -26,9 +26,7 @@ type AccountsApiImplService struct {
 	jwtSecret string
 }
 
-func NewAccountsApiImplService() gen.AccountsApiServicer {
-	conf := server.GetConfig()
-	md := server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
+func NewAccountsApiImplService(md *mongo.Client, jwtSecret string) gen.AccountsApiServicer {
 	return &AccountsApiImplService{
 		AccountsApiService: gen.AccountsApiService{},
 		// es:                 server.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
@@ -36,7 +34,7 @@ func NewAccountsApiImplService() gen.AccountsApiServicer {
 		ih:        mongo_models.NewMongoInviteHelper(md),
 		ah:        mongo_models.NewMongoAccountHelper(md),
 		validate:  validator.New(),
-		jwtSecret: conf.JwtSecret,
+		jwtSecret: jwtSecret,
 	}
 }
 

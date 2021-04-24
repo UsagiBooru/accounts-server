@@ -21,8 +21,10 @@ import (
 
 func main() {
 	server.Info("Server started")
+	conf := server.GetConfig()
+	md := server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
 
-	AccountsApiService := impl.NewAccountsApiImplService()
+	AccountsApiService := impl.NewAccountsApiImplService(md, conf.JwtSecret)
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
 
 	MutesApiService := gen.NewMutesApiService()

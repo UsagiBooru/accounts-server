@@ -1,3 +1,4 @@
 package tests
 
 const PASSWORD = "DUMMY_PASSWORD"
+const JWT_SECRET = "UNSAFE_SECRET_KEY_CHANGE_ME!"

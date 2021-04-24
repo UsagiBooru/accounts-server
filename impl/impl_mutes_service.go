@@ -9,7 +9,6 @@ import (
 	"github.com/UsagiBooru/accounts-server/models/mongo_models"
 	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/UsagiBooru/accounts-server/utils/response"
-	"github.com/UsagiBooru/accounts-server/utils/server"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -21,9 +20,7 @@ type MutesApiImplService struct {
 	mh mongo_models.MongoMuteHelper
 }
 
-func NewMutesApiImplService() gen.MutesApiServicer {
-	conf := server.GetConfig()
-	md := server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
+func NewMutesApiImplService(md *mongo.Client) gen.MutesApiServicer {
 	return &MutesApiImplService{
 		MutesApiService: gen.MutesApiService{},
 		md:              md,
