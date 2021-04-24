@@ -46,38 +46,13 @@ func GetAccountsServer() (*httptest.Server, func(), bool) {
 	return httptest.NewServer(router), shutdown, isParallel
 }
 
-func SetAdminUserHeader(req *http.Request) *http.Request {
-	req.Header.Set("x-consumer-user-id", "1")
-	req.Header.Set("x-consumer-user-permission", strconv.Itoa(request.PermissionAdmin))
-	return req
-}
-
-func SetModUserHeader(req *http.Request) *http.Request {
-	req.Header.Set("x-consumer-user-id", "2")
-	req.Header.Set("x-consumer-user-permission", strconv.Itoa(request.PermissionModerator))
-	return req
-}
-
-func SetNormalUserHeader(req *http.Request) *http.Request {
-	req.Header.Set("x-consumer-user-id", "3")
-	req.Header.Set("x-consumer-user-permission", strconv.Itoa(request.PermissionUser))
-	return req
-}
-
-func TestMain(m *testing.M) {
-	// server.Debug("Resetting database...")
-	err := ReGenerateTestDatabase()
-	if err != nil {
-		server.Error(err.Error())
+func TestGetAccountSuccessOnValid(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
 	}
-	// server.Debug("Reset database success.")
-
-	m.Run()
-}
-
-func TestGetAccount(t *testing.T) {
-	s := GetAccountsServer()
 	defer s.Close()
+	defer shutdown()
 	req := httptest.NewRequest(http.MethodGet, "/accounts/1", nil)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
@@ -85,9 +60,41 @@ func TestGetAccount(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestCreateAccount(t *testing.T) {
-	s := GetAccountsServer()
+func TestGetAccountNotFoundOnInvalidId(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(http.MethodGet, "/accounts/404", nil)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestGetAccountNotFoundOnDeletedId(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(http.MethodGet, "/accounts/2", nil)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestCreateAccountSuccessOnValid(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
 	newAccount := gen.AccountStruct{
 		Name:      "デバッグアカウント",
 		DisplayID: "debugaccount",
@@ -97,10 +104,7 @@ func TestCreateAccount(t *testing.T) {
 			Code: "devcode1",
 		},
 	}
-	user_json, err := json.Marshal(newAccount)
-	if err != nil {
-		log.Fatal("Convert struct to json failed.")
-	}
+	user_json, _ := json.Marshal(newAccount)
 	req := httptest.NewRequest(
 		http.MethodPost,
 		"/accounts",
@@ -112,16 +116,73 @@ func TestCreateAccount(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestEditAccount(t *testing.T) {
-	s := GetAccountsServer()
+func TestCreateAccountBadRequestOnInvalidCode(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
+	defer shutdown()
+	newAccount := gen.AccountStruct{
+		Name:      "デバッグアカウント",
+		DisplayID: "debugaccount",
+		Password:  "debugaccount",
+		Mail:      "mail@example.com",
+		Invite: gen.AccountStructInvite{
+			Code: "invalidcode",
+		},
+	}
+	user_json, _ := json.Marshal(newAccount)
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/accounts",
+		bytes.NewBuffer(user_json),
+	)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestCreateAccountBadRequestOnInvalidMail(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	newAccount := gen.AccountStruct{
+		Name:      "デバッグアカウント",
+		DisplayID: "debugaccount",
+		Password:  "debugaccount",
+		Mail:      "mailaddress",
+		Invite: gen.AccountStructInvite{
+			Code: "devcode1",
+		},
+	}
+	user_json, _ := json.Marshal(newAccount)
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/accounts",
+		bytes.NewBuffer(user_json),
+	)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestEditAccountSuccessOnChangeName(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
 	editAccount := gen.AccountStruct{
 		Name: "デバッグアカウント2",
 	}
-	req_json, err := json.Marshal(editAccount)
-	if err != nil {
-		log.Fatal("Convert struct to json failed.")
-	}
+	req_json, _ := json.Marshal(editAccount)
 	req := httptest.NewRequest(
 		http.MethodPatch,
 		"/accounts/1",
@@ -134,9 +195,13 @@ func TestEditAccount(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestGetAccountMe(t *testing.T) {
-	s := GetAccountsServer()
+func TestGetAccountMeFromAdmin(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
+	defer shutdown()
 	req := httptest.NewRequest(
 		http.MethodGet,
 		"/accounts/me",
@@ -149,32 +214,120 @@ func TestGetAccountMe(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestLoginWithForm(t *testing.T) {
-	s := GetAccountsServer()
+func TestGetAccountMeFromMod(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
-	editAccount := gen.PostLoginWithFormRequest{
-		Id:       "domao",
-		Password: PASSWORD,
-	}
-	req_json, err := json.Marshal(editAccount)
-	if err != nil {
-		log.Fatal("Convert struct to json failed.")
-	}
+	defer shutdown()
 	req := httptest.NewRequest(
-		http.MethodPost,
-		"/accounts/login/form",
-		bytes.NewBuffer(req_json),
+		http.MethodGet,
+		"/accounts/me",
+		nil,
 	)
-	req = SetAdminUserHeader(req)
+	req = SetModUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestDeleteAccount(t *testing.T) {
-	s := GetAccountsServer()
+func TestGetAccountMeFromNormal(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/accounts/me",
+		nil,
+	)
+	req = SetNormalUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestLoginWithFormSuccessOnValid(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	editAccount := gen.PostLoginWithFormRequest{
+		Id:       "domao",
+		Password: PASSWORD,
+	}
+	req_json, _ := json.Marshal(editAccount)
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/accounts/login/form",
+		bytes.NewBuffer(req_json),
+	)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestLoginWithFormNotFoundOnInvalidId(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	editAccount := gen.PostLoginWithFormRequest{
+		Id:       "omadosan",
+		Password: PASSWORD,
+	}
+	req_json, _ := json.Marshal(editAccount)
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/accounts/login/form",
+		bytes.NewBuffer(req_json),
+	)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestLoginWithFormUnAuthorizedOnInvalidPass(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	loginAccount := gen.PostLoginWithFormRequest{
+		Id:       "domao",
+		Password: "invalid-pass",
+	}
+	req_json, _ := json.Marshal(loginAccount)
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/accounts/login/form",
+		bytes.NewBuffer(req_json),
+	)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+}
+
+func TestDeleteAccountFromAdmin(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
 	req := httptest.NewRequest(
 		http.MethodDelete,
 		"/accounts/1",
@@ -185,4 +338,42 @@ func TestDeleteAccount(t *testing.T) {
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusNoContent, rec.Code)
+}
+
+func TestDeleteAccountFromMod(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/accounts/1",
+		nil,
+	)
+	req = SetModUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusNoContent, rec.Code)
+}
+
+func TestDeleteAccountFromNormal(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/accounts/1",
+		nil,
+	)
+	req = SetNormalUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusForbidden, rec.Code)
 }
