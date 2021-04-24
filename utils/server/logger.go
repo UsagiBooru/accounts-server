@@ -41,3 +41,8 @@ func Warn(msg string) {
 func Error(msg string) {
 	Log.Error(msg)
 }
+
+// Fatal - shorthand Log.Fatal
+func Fatal(msg string) {
+	Log.Fatal(msg)
+}
