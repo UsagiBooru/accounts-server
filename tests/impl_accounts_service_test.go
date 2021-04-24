@@ -3,25 +3,47 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"log"
+	"flag"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/impl"
-	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/UsagiBooru/accounts-server/utils/server"
 )
 
-func GetAccountsServer() *httptest.Server {
-	AccountsApiService := impl.NewAccountsApiImplService()
+// TODO: Fix flag. This is not working properly. (Always parallel)
+var parallelFlag = flag.Bool("parallel", true, "Set true to use parallel test(Local), otherwise to simple test(CI)")
+
+func GetAccountsServer() (*httptest.Server, func(), bool) {
+	var db *mongo.Client
+	var shutdown func()
+	var err error
+	var isParallel bool
+	if *parallelFlag {
+		db, shutdown, err = GenerateMongoTestContainer()
+		isParallel = true
+	} else {
+		conf := server.GetConfig()
+		db = server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
+		shutdown = func() {}
+		err = nil
+		isParallel = false
+	}
+	if err != nil {
+		server.Fatal(err.Error())
+	}
+	if err := ReGenerateDatabase(db); err != nil {
+		server.Fatal(err.Error())
+	}
+	AccountsApiService := impl.NewAccountsApiImplService(db, JWT_SECRET)
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
 	router := server.NewRouterWithInject(AccountsApiController)
-	return httptest.NewServer(router)
+	return httptest.NewServer(router), shutdown, isParallel
 }
 
 func SetAdminUserHeader(req *http.Request) *http.Request {
