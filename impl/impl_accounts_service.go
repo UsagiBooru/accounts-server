@@ -46,6 +46,12 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
+	// Read permission for block getting deleted account
+	issuerPermission, _ := request.GetUserPermission(ctx)
+	if issuerPermission == account_const.PERMISSION_USER &&
+		account.AccountStatus != account_const.STATUS_ACTIVE {
+		return response.NewNotFoundError(), nil
+	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }
 

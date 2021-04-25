@@ -75,7 +75,7 @@ func TestGetAccountNotFoundOnInvalidId(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
-func TestGetAccountNotFoundOnDeletedId(t *testing.T) {
+func TestGetAccountNotFoundOnDeletedIdFromUser(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
@@ -87,6 +87,21 @@ func TestGetAccountNotFoundOnDeletedId(t *testing.T) {
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestGetAccountSuccessOnDeletedIdFromMod(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(http.MethodGet, "/accounts/4", nil)
+	req = SetModUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
 func TestCreateAccountSuccessOnValid(t *testing.T) {
