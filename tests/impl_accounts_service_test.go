@@ -211,7 +211,7 @@ func TestEditAccountSuccessOnChangeName(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestGetAccountMeFromAdmin(t *testing.T) {
+func TestGetAccountMeSuccessFromAdmin(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
@@ -230,7 +230,7 @@ func TestGetAccountMeFromAdmin(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestGetAccountMeFromMod(t *testing.T) {
+func TestGetAccountMeSuccessFromMod(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
@@ -249,7 +249,7 @@ func TestGetAccountMeFromMod(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestGetAccountMeFromNormal(t *testing.T) {
+func TestGetAccountMeSuccessFromNormal(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
@@ -291,7 +291,7 @@ func TestLoginWithFormSuccessOnValid(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestLoginWithFormNotFoundOnInvalidId(t *testing.T) {
+func TestLoginWithFormUnAuthorizedOnInvalidId(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
@@ -337,7 +337,7 @@ func TestLoginWithFormUnAuthorizedOnInvalidPass(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
 
-func TestDeleteAccountFromAdmin(t *testing.T) {
+func TestDeleteAccountSuccessFromAdmin(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
@@ -356,7 +356,7 @@ func TestDeleteAccountFromAdmin(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, rec.Code)
 }
 
-func TestDeleteAccountFromMod(t *testing.T) {
+func TestDeleteAccountSuccessFromMod(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
@@ -375,7 +375,7 @@ func TestDeleteAccountFromMod(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, rec.Code)
 }
 
-func TestDeleteAccountFromNormal(t *testing.T) {
+func TestDeleteAccountForbiddenFromNormal(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
 		t.Parallel()
