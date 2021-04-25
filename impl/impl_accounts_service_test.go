@@ -1,4 +1,4 @@
-package tests
+package impl_test
 
 import (
 	"bytes"
@@ -12,11 +12,12 @@ import (
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/impl"
 	"github.com/UsagiBooru/accounts-server/utils/server"
+	"github.com/UsagiBooru/accounts-server/utils/tests"
 )
 
 func GetAccountsServer() (*httptest.Server, func(), bool) {
-	db, shutdown, isParallel := GetDatabaseConnection()
-	AccountsApiService := impl.NewAccountsApiImplService(db, JWT_SECRET)
+	db, shutdown, isParallel := tests.GetDatabaseConnection()
+	AccountsApiService := impl.NewAccountsApiImplService(db, tests.JWT_SECRET)
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
 	router := server.NewRouterWithInject(AccountsApiController)
 	return httptest.NewServer(router), shutdown, isParallel
@@ -72,7 +73,7 @@ func TestGetAccountSuccessOnDeletedIdFromMod(t *testing.T) {
 	defer s.Close()
 	defer shutdown()
 	req := httptest.NewRequest(http.MethodGet, "/accounts/4", nil)
-	req = SetModUserHeader(req)
+	req = tests.SetModUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -179,7 +180,7 @@ func TestEditAccountSuccessOnChangeName(t *testing.T) {
 		"/accounts/1",
 		bytes.NewBuffer(req_json),
 	)
-	req = SetAdminUserHeader(req)
+	req = tests.SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -198,7 +199,7 @@ func TestGetAccountMeSuccessFromAdmin(t *testing.T) {
 		"/accounts/me",
 		nil,
 	)
-	req = SetAdminUserHeader(req)
+	req = tests.SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -217,7 +218,7 @@ func TestGetAccountMeSuccessFromMod(t *testing.T) {
 		"/accounts/me",
 		nil,
 	)
-	req = SetModUserHeader(req)
+	req = tests.SetModUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -236,7 +237,7 @@ func TestGetAccountMeSuccessFromNormal(t *testing.T) {
 		"/accounts/me",
 		nil,
 	)
-	req = SetNormalUserHeader(req)
+	req = tests.SetNormalUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -252,7 +253,7 @@ func TestLoginWithFormSuccessOnValid(t *testing.T) {
 	defer shutdown()
 	editAccount := gen.PostLoginWithFormRequest{
 		Id:       "domao",
-		Password: PASSWORD,
+		Password: tests.PASSWORD,
 	}
 	req_json, _ := json.Marshal(editAccount)
 	req := httptest.NewRequest(
@@ -275,7 +276,7 @@ func TestLoginWithFormUnAuthorizedOnInvalidId(t *testing.T) {
 	defer shutdown()
 	editAccount := gen.PostLoginWithFormRequest{
 		Id:       "omadosan",
-		Password: PASSWORD,
+		Password: tests.PASSWORD,
 	}
 	req_json, _ := json.Marshal(editAccount)
 	req := httptest.NewRequest(
@@ -324,7 +325,7 @@ func TestDeleteAccountSuccessFromAdmin(t *testing.T) {
 		"/accounts/1",
 		nil,
 	)
-	req = SetAdminUserHeader(req)
+	req = tests.SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -343,7 +344,7 @@ func TestDeleteAccountSuccessFromMod(t *testing.T) {
 		"/accounts/1",
 		nil,
 	)
-	req = SetModUserHeader(req)
+	req = tests.SetModUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -362,7 +363,7 @@ func TestDeleteAccountForbiddenFromNormal(t *testing.T) {
 		"/accounts/1",
 		nil,
 	)
-	req = SetNormalUserHeader(req)
+	req = tests.SetNormalUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -381,8 +382,8 @@ func TestDeleteAccountSuccessFromSelf(t *testing.T) {
 		"/accounts/3",
 		nil,
 	)
-	req = SetNormalUserHeader(req)
-	req.Header.Set("password", PASSWORD)
+	req = tests.SetNormalUserHeader(req)
+	req.Header.Set("password", tests.PASSWORD)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)

@@ -1,4 +1,4 @@
-package tests
+package impl_test
 
 import (
 	"bytes"
@@ -13,10 +13,11 @@ import (
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/impl"
 	"github.com/UsagiBooru/accounts-server/utils/server"
+	"github.com/UsagiBooru/accounts-server/utils/tests"
 )
 
 func GetMutesServer() (*httptest.Server, func(), bool) {
-	db, shutdown, isParallel := GetDatabaseConnection()
+	db, shutdown, isParallel := tests.GetDatabaseConnection()
 	MutesApiService := impl.NewMutesApiImplService(db)
 	MutesApiController := gen.NewMutesApiController(MutesApiService)
 	router := server.NewRouterWithInject(MutesApiController)
@@ -31,7 +32,7 @@ func TestGetMuteSuccess(t *testing.T) {
 	defer s.Close()
 	defer shutdown()
 	req := httptest.NewRequest(http.MethodGet, "/accounts/1/mutes/1", nil)
-	req = SetAdminUserHeader(req)
+	req = tests.SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -59,7 +60,7 @@ func TestCreateMuteSuccess(t *testing.T) {
 		"/accounts/1/mutes",
 		bytes.NewBuffer(user_json),
 	)
-	req = SetAdminUserHeader(req)
+	req = tests.SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
@@ -78,7 +79,7 @@ func TestDeleteMuteSuccess(t *testing.T) {
 		"/accounts/1/mutes/1",
 		nil,
 	)
-	req = SetAdminUserHeader(req)
+	req = tests.SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
