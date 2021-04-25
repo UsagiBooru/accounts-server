@@ -16,8 +16,7 @@ import (
 	"github.com/UsagiBooru/accounts-server/utils/server"
 )
 
-// TODO: Fix flag. This is not working properly. (Always parallel)
-var parallelFlag = flag.Bool("parallel", true, "Set true to use parallel test(Local), otherwise to simple test(CI)")
+var parallelFlag = flag.Bool("docker", false, "Set true to use parallel test(Local), otherwise to simple test(CI)")
 
 func GetAccountsServer() (*httptest.Server, func(), bool) {
 	var db *mongo.Client
@@ -25,9 +24,11 @@ func GetAccountsServer() (*httptest.Server, func(), bool) {
 	var err error
 	var isParallel bool
 	if *parallelFlag {
+		server.Debug("Using mongo container")
 		db, shutdown, err = GenerateMongoTestContainer()
 		isParallel = true
 	} else {
+		server.Debug("Using mongo server")
 		conf := server.GetConfig()
 		db = server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
 		shutdown = func() {}
