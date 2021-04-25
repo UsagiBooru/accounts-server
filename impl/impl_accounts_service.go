@@ -140,8 +140,11 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 
 	})
 	if err != nil {
-		server.Debug(err.Error())
-		return response.NewInternalError(), nil
+		if err == server.ErrInviteNotFound {
+			return response.NewNotFoundErrorWithMessage(err.Error()), nil
+		} else {
+			return response.NewInternalError(), nil
+		}
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }

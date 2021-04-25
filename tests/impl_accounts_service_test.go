@@ -141,7 +141,7 @@ func TestCreateAccountBadRequestOnInvalidCode(t *testing.T) {
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
-	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
 func TestCreateAccountBadRequestOnInvalidMail(t *testing.T) {

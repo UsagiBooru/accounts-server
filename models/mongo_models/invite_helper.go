@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/UsagiBooru/accounts-server/utils/server"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -37,7 +38,7 @@ func (h *MongoInviteHelper) FindInvite(code string) (*MongoInvite, error) {
 	}
 	var invite MongoInvite
 	if err := h.col.FindOne(context.Background(), filter).Decode(&invite); err != nil {
-		return nil, errors.New("invite code was not found")
+		return nil, server.ErrInviteNotFound
 	}
 	return &invite, nil
 }
