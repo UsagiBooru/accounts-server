@@ -3,6 +3,8 @@ package request
 import (
 	"encoding/json"
 	"errors"
+
+	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
 )
 
 func ValidateRequiredFields(req interface{}, fields []string) error {
@@ -23,7 +25,7 @@ func ValidateRequiredFields(req interface{}, fields []string) error {
 }
 
 func ValidatePermission(issuerPermission int32, issuerID int32, targetID int32) error {
-	notMod := issuerPermission < PermissionModerator
+	notMod := issuerPermission < account_const.PERMISSION_MOD
 	if targetID != issuerID && notMod {
 		return errors.New("not enough permissions")
 	}

@@ -12,12 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	STATUS_NORMAL       = 0
-	STATUS_DELETED_SELF = 1
-	STATUS_DELETED_MOD  = 2
-)
-
 type AccountID int32
 
 // MongoAccountStructNotify - 通知クライアントを設定済みか
