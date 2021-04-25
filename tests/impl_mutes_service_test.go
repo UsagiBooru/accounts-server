@@ -15,16 +15,21 @@ import (
 	"github.com/UsagiBooru/accounts-server/utils/server"
 )
 
-func GetMutesServer() *httptest.Server {
-	MutesApiService := impl.NewMutesApiImplService()
+func GetMutesServer() (*httptest.Server, func(), bool) {
+	db, shutdown, isParallel := GetDatabaseConnection()
+	MutesApiService := impl.NewMutesApiImplService(db)
 	MutesApiController := gen.NewMutesApiController(MutesApiService)
 	router := server.NewRouterWithInject(MutesApiController)
-	return httptest.NewServer(router)
+	return httptest.NewServer(router), shutdown, isParallel
 }
 
-func TestGetMute(t *testing.T) {
-	s := GetMutesServer()
+func TestGetMuteSuccess(t *testing.T) {
+	s, shutdown, isParallel := GetMutesServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
+	defer shutdown()
 	req := httptest.NewRequest(http.MethodGet, "/accounts/1/mutes/1", nil)
 	req = SetAdminUserHeader(req)
 	rec := httptest.NewRecorder()
@@ -33,14 +38,17 @@ func TestGetMute(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestCreateMute(t *testing.T) {
-	s := GetMutesServer()
+func TestCreateMuteSuccess(t *testing.T) {
+	s, shutdown, isParallel := GetMutesServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
+	defer shutdown()
 	newMute := gen.MuteStruct{
-		MuteID:     1,
 		AccountID:  1,
 		TargetType: "artist",
-		TargetID:   1,
+		TargetID:   2,
 	}
 	user_json, err := json.Marshal(newMute)
 	if err != nil {
@@ -58,9 +66,13 @@ func TestCreateMute(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
-func TestDeleteMute(t *testing.T) {
-	s := GetMutesServer()
+func TestDeleteMuteSuccess(t *testing.T) {
+	s, shutdown, isParallel := GetMutesServer()
+	if isParallel {
+		t.Parallel()
+	}
 	defer s.Close()
+	defer shutdown()
 	req := httptest.NewRequest(
 		http.MethodDelete,
 		"/accounts/1/mutes/1",

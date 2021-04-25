@@ -77,7 +77,7 @@ func DestroyMongoTestContainer(pool *dockertest.Pool, resource *dockertest.Resou
 
 func ReGenerateDatabase(m *mongo.Client) error {
 	// Drop database
-	drops := []string{"users", "invites", "sequence"}
+	drops := []string{"users", "invites", "mutes", "sequence"}
 	for _, d := range drops {
 		col := m.Database("accounts").Collection(d)
 		err := col.Drop(context.Background())
@@ -86,6 +86,9 @@ func ReGenerateDatabase(m *mongo.Client) error {
 		}
 	}
 	if err := InitAccountDatabase(m); err != nil {
+		return err
+	}
+	if err := InitMuteDatabase(m); err != nil {
 		return err
 	}
 	return nil

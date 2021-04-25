@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/UsagiBooru/accounts-server/gen"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,17 +18,27 @@ func NewMongoMuteHelper(md *mongo.Client) MongoMuteHelper {
 	return MongoMuteHelper{md.Database("accounts").Collection("mutes")}
 }
 
+func (h *MongoMuteHelper) ToMongo(mt gen.MuteStruct) *MongoMuteStruct {
+	resp := MongoMuteStruct{
+		MuteID:     mt.MuteID,
+		AccountID:  AccountID(mt.AccountID),
+		TargetType: mt.TargetType,
+		TargetID:   mt.TargetID,
+	}
+	return &resp
+}
+
 func (h *MongoMuteHelper) CreateMute(muteID int32, targetType string, targetID int32) (*MongoMuteStruct, error) {
-	newMuteForNew := MongoMuteStruct{
+	newMute := MongoMuteStruct{
 		ID:         primitive.NewObjectID(),
 		MuteID:     muteID,
 		TargetType: targetType,
 		TargetID:   targetID,
 	}
-	if _, err := h.col.InsertOne(context.Background(), newMuteForNew); err != nil {
+	if _, err := h.col.InsertOne(context.Background(), newMute); err != nil {
 		return nil, errors.New("insert mute failed")
 	}
-	return &newMuteForNew, nil
+	return &newMute, nil
 }
 
 func (h *MongoMuteHelper) FindMute(muteID int32) (*MongoMuteStruct, error) {
@@ -41,12 +52,17 @@ func (h *MongoMuteHelper) FindMute(muteID int32) (*MongoMuteStruct, error) {
 	return &Mute, nil
 }
 
-func (h *MongoMuteHelper) FindMuteUsingFilter(filter bson.M) (*MongoMuteStruct, error) {
-	var Mute MongoMuteStruct
-	if err := h.col.FindOne(context.Background(), filter).Decode(&Mute); err != nil {
-		return nil, errors.New("mute was not found")
+func (h *MongoMuteHelper) FindDuplicatedMute(targetType string, targetID int32, accountID AccountID) error {
+	filter := bson.M{
+		"targetType": targetType,
+		"targetID":   targetID,
+		"accountID":  accountID,
 	}
-	return &Mute, nil
+	var Mute MongoMuteStruct
+	if err := h.col.FindOne(context.Background(), filter).Decode(&Mute); err == nil {
+		return errors.New("duplicated mute was found")
+	}
+	return nil
 }
 
 func (h *MongoMuteHelper) DeleteMute(muteID int32) error {

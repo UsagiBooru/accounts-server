@@ -9,15 +9,16 @@ import (
 	"github.com/UsagiBooru/accounts-server/models/mongo_models"
 	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/UsagiBooru/accounts-server/utils/response"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type MutesApiImplService struct {
 	gen.MutesApiService
-	md *mongo.Client
-	ah mongo_models.MongoAccountHelper
-	mh mongo_models.MongoMuteHelper
+	md       *mongo.Client
+	ah       mongo_models.MongoAccountHelper
+	mh       mongo_models.MongoMuteHelper
+	validate *validator.Validate
 }
 
 func NewMutesApiImplService(md *mongo.Client) gen.MutesApiServicer {
@@ -26,11 +27,17 @@ func NewMutesApiImplService(md *mongo.Client) gen.MutesApiServicer {
 		md:              md,
 		ah:              mongo_models.NewMongoAccountHelper(md),
 		mh:              mongo_models.NewMongoMuteHelper(md),
+		validate:        validator.New(),
 	}
 }
 
 // AddMute - Add mute
 func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, muteStruct gen.MuteStruct) (gen.ImplResponse, error) {
+	// Validate struct
+	err := s.validate.Struct(s.mh.ToMongo(muteStruct))
+	if err != nil {
+		return response.NewRequestErrorWithMessage(err.Error()), nil
+	}
 	// Get issuerId/ issuerPermission
 	issuerID, issuerPermission, err := request.GetHeaders(ctx)
 	if err != nil {
@@ -47,15 +54,11 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 	// Find target account
 	_, err = s.ah.FindAccount(mongo_models.AccountID(issuerID))
 	if err != nil {
-		return response.NewNotFoundError(), nil
+		return response.NewNotFoundErrorWithMessage("specified account was not found"), nil
 	}
 	// Find mute does already exists
-	filter := bson.M{
-		"targetType": muteStruct.TargetType,
-		"targetID":   muteStruct.TargetID,
-	}
-	_, err = s.mh.FindMuteUsingFilter(filter)
-	if err == nil {
+	err = s.mh.FindDuplicatedMute(muteStruct.TargetType, muteStruct.TargetID, mongo_models.AccountID(issuerID))
+	if err != nil {
 		return response.NewConflictedError(), nil
 	}
 	// Get muteIDSeq
@@ -90,15 +93,10 @@ func (s *MutesApiImplService) DeleteMute(ctx context.Context, accountID int32, m
 	if err := request.ValidatePermission(issuerPermission, issuerID, accountID); err != nil {
 		return response.NewPermissionErrorWithMessage(err.Error()), err
 	}
-	// Find mute
-	_, err = s.mh.FindMute(muteID)
-	if err != nil {
-		return response.NewNotFoundError(), nil
-	}
 	// Delete mute
 	err = s.mh.DeleteMute(muteID)
 	if err != nil {
-		return response.NewInternalError(), nil
+		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(204, nil), nil
 }
@@ -133,9 +131,6 @@ func (s *MutesApiImplService) GetMutes(ctx context.Context, accountID int32) (ge
 	}
 	//TODO: Uncomment the next line to return gen.Response Response(200, GetMutesResponse{}) or use other options such as http.Ok ...
 	//return gen.Response(200, GetMutesResponse{}), nil
-
-	//TODO: Uncomment the next line to return gen.Response Response(403, GeneralMessageResponse{}) or use other options such as http.Ok ...
-	//return gen.Response(403, GeneralMessageResponse{}), nil
 
 	//TODO: Uncomment the next line to return gen.Response Response(404, GeneralMessageResponse{}) or use other options such as http.Ok ...
 	//return gen.Response(404, GeneralMessageResponse{}), nil

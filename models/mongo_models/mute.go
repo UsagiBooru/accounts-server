@@ -13,13 +13,13 @@ type MongoMuteStruct struct {
 	AccountID AccountID `json:"accountID,omitempty" bson:"accountID,omitempty" validate:"gte=0"`
 
 	// ミュートID
-	MuteID int32 `json:"muteID,omitempty" validate:"gte=0"`
+	MuteID int32 `bson:"muteID,omitempty" validate:"gte=0"`
 
 	// ミュート種別
-	TargetType string `json:"targetType,omitempty" validate:"gte=0,lte=9"`
+	TargetType string `bson:"targetType,omitempty" validate:"gte=0,lte=9"`
 
 	// 対象のタグ/絵師ID
-	TargetID int32 `json:"targetID,omitempty" validate:"gte=0"`
+	TargetID int32 `bson:"targetID,omitempty" validate:"gte=0"`
 }
 
 func (f *MongoMuteStruct) ToOpenApi() *gen.MuteStruct {
