@@ -393,3 +393,23 @@ func TestDeleteAccountForbiddenFromNormal(t *testing.T) {
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusForbidden, rec.Code)
 }
+
+func TestDeleteAccountSuccessFromSelf(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/accounts/3",
+		nil,
+	)
+	req = SetNormalUserHeader(req)
+	req.Header.Set("password", PASSWORD)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusNoContent, rec.Code)
+}
