@@ -3,44 +3,19 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/impl"
 	"github.com/UsagiBooru/accounts-server/utils/server"
 )
 
-var parallelFlag = flag.Bool("docker", false, "Set true to use parallel test(Local), otherwise to simple test(CI)")
-
 func GetAccountsServer() (*httptest.Server, func(), bool) {
-	var db *mongo.Client
-	var shutdown func()
-	var err error
-	var isParallel bool
-	if *parallelFlag {
-		server.Debug("Using mongo container")
-		db, shutdown, err = GenerateMongoTestContainer()
-		isParallel = true
-	} else {
-		server.Debug("Using mongo server")
-		conf := server.GetConfig()
-		db = server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
-		shutdown = func() {}
-		err = nil
-		isParallel = false
-	}
-	if err != nil {
-		server.Fatal(err.Error())
-	}
-	if err := ReGenerateDatabase(db); err != nil {
-		server.Fatal(err.Error())
-	}
+	db, shutdown, isParallel := GetDatabaseConnection()
 	AccountsApiService := impl.NewAccountsApiImplService(db, JWT_SECRET)
 	AccountsApiController := gen.NewAccountsApiController(AccountsApiService)
 	router := server.NewRouterWithInject(AccountsApiController)

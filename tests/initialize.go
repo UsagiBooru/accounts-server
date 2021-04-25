@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"errors"
+	"flag"
 	"time"
 
 	"github.com/UsagiBooru/accounts-server/utils/server"
@@ -11,6 +12,31 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
+
+var parallelFlag = flag.Bool("docker", false, "Set true to use parallel test(Local), otherwise to simple test(CI)")
+
+func GetDatabaseConnection() (db *mongo.Client, shutdown func(), isParallel bool) {
+	var err error
+	if *parallelFlag {
+		server.Debug("Using mongo container")
+		db, shutdown, err = GenerateMongoTestContainer()
+		if err != nil {
+			server.Fatal(err.Error())
+		}
+		isParallel = true
+	} else {
+		server.Debug("Using mongo server")
+		conf := server.GetConfig()
+		db = server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
+		shutdown = func() {}
+		err = nil
+		isParallel = false
+	}
+	if err := ReGenerateDatabase(db); err != nil {
+		server.Fatal(err.Error())
+	}
+	return
+}
 
 func GenerateMongoTestContainer() (*mongo.Client, func(), error) {
 	var db *mongo.Client
