@@ -82,7 +82,7 @@ func TestGetAccountNotFoundOnDeletedId(t *testing.T) {
 	}
 	defer s.Close()
 	defer shutdown()
-	req := httptest.NewRequest(http.MethodGet, "/accounts/2", nil)
+	req := httptest.NewRequest(http.MethodGet, "/accounts/4", nil)
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
