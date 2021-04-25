@@ -295,7 +295,7 @@ func TestLoginWithFormNotFoundOnInvalidId(t *testing.T) {
 	rec := httptest.NewRecorder()
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
-	assert.Equal(t, http.StatusNotFound, rec.Code)
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
 
 func TestLoginWithFormUnAuthorizedOnInvalidPass(t *testing.T) {

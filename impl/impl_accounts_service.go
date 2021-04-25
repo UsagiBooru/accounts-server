@@ -295,7 +295,7 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 	filter := bson.M{"displayID": accountIdOrMail}
 	var account mongo_models.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
-		return response.NewNotFoundError(), nil
+		return response.NewUnauthorizedError(), nil
 	}
 	if err := account.ValidatePassword(accountPassword); err != nil {
 		return response.NewUnauthorizedError(), nil
