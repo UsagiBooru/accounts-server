@@ -161,60 +161,53 @@ func (f *MongoAccountStruct) UpdateName(col *mongo.Collection, name string) (err
 	return nil
 }
 
-func (f *MongoAccountStruct) UpdateDescription(description string) (err error) {
+func (f *MongoAccountStruct) UpdateDescription(description string) {
 	if description == "" || f.Description == description {
-		return nil
+		return
 	}
 	f.Description = description
-	return nil
 }
 
-func (f *MongoAccountStruct) UpdateMail(mail string) (err error) {
+func (f *MongoAccountStruct) UpdateMail(mail string) {
 	if mail == "" {
-		return nil
+		return
 	}
 	f.Mail = mail
-	return nil
 }
 
-func (f *MongoAccountStruct) UpdateFavorite(favorite int32) (err error) {
+func (f *MongoAccountStruct) UpdateFavorite(favorite int32) {
 	if favorite == 0 {
-		return nil
+		return
 	}
 	f.Favorite = favorite
-	return nil
 }
 
-func (f *MongoAccountStruct) UpdateAccess(access gen.AccountStructAccess) (err error) {
+func (f *MongoAccountStruct) UpdateAccess(access gen.AccountStructAccess) {
 	if (access == gen.AccountStructAccess{}) {
-		return nil
+		return
 	}
 	f.Access = MongoAccountStructAccess(access)
-	return nil
 }
 
-func (f *MongoAccountStruct) UpdateIpfs(ipfs gen.AccountStructIpfs) (err error) {
+func (f *MongoAccountStruct) UpdateIpfs(ipfs gen.AccountStructIpfs) {
 	if (ipfs == gen.AccountStructIpfs{}) {
-		return nil
+		return
 	}
 	f.Ipfs = MongoAccountStructIpfs(ipfs)
-	return nil
 }
 
-func (f *MongoAccountStruct) UpdateApiSeq(update int32) (err error) {
+func (f *MongoAccountStruct) UpdateApiSeq(update int32) {
 	if update == 0 {
-		return nil
+		return
 	}
 	f.ApiSeq += 1
-	return nil
 }
 
-func (f *MongoAccountStruct) UpdatePermission(permission int32) (err error) {
+func (f *MongoAccountStruct) UpdatePermission(permission int32) {
 	if f.Permission == permission {
-		return nil
+		return
 	}
 	f.Permission = permission
-	return nil
 }
 
 func (f *MongoAccountStruct) UpdatePassword(old_password string, new_password string) (err error) {

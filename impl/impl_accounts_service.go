@@ -181,44 +181,29 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if (accountChange.Invite != gen.AccountStructInvite{}) ||
 		(accountChange.Inviter != gen.LightAccountStruct{}) ||
 		(accountChange.Notify != gen.AccountStructNotify{}) {
-		server.Debug("Denied since tried to change invite / inviter / notify")
-		return response.NewRequestError(), nil
+		return response.NewRequestErrorWithMessage("invite/inviter/notify are not editable"), nil
 	}
 	// Deny changing different account if not greater than moderator
 	if notSelf && notMod {
-		return response.NewPermissionError(), nil
+		return response.NewPermissionErrorWithMessage("you can't edit different account!"), nil
 	}
 	// Deny changing if target permission is greater than moderator except target is ownself
-	if issuerPermission == account_const.PERMISSION_MOD &&
-		accountCurrent.Permission >= account_const.PERMISSION_MOD &&
-		notSelf {
-		server.Debug("Denied since changing permission with moderator, and target was not normal user.")
-		return response.NewPermissionError(), nil
-	}
 	// Deny changing permission if not admin
-	if accountChange.Permission != accountCurrent.Permission && notAdmin {
-		server.Debug("Denied since changing permission with not admin")
-		return response.NewPermissionError(), nil
-	}
 	// Deny changing access if not greater than moderator
-	if (accountChange.Access != gen.AccountStructAccess{}) && notMod {
-		server.Debug("Denied since changing access with not greater than moderator")
+	if (issuerPermission == account_const.PERMISSION_MOD &&
+		accountCurrent.Permission >= account_const.PERMISSION_MOD &&
+		notSelf) ||
+		(accountChange.Permission != accountCurrent.Permission && notAdmin) ||
+		((accountChange.Access != gen.AccountStructAccess{}) && notMod) {
 		return response.NewPermissionError(), nil
 	}
-	// Deny changing password if not admin except target is ownself
-	if accountChange.Password != "" && notSelfOrAdmin {
-		server.Debug("Denied since changing password with not admin and target wasn't ownself")
-		return response.NewPermissionError(), nil
-	}
-	// Deny changing totp if not admin except target is ownself
-	if accountChange.TotpEnabled != accountCurrent.TotpEnabled && notSelfOrAdmin {
-		server.Debug("Denied since changing totp with not admin and target wasn't ownself")
-		return response.NewPermissionError(), nil
-	}
-	// Deny changing mail if not admin except target is ownself
-	if accountChange.Mail != "" && notSelfOrAdmin {
-		server.Debug("Denied since changing mail with not admin and target wasn't ownself")
-		return response.NewPermissionError(), nil
+	// Deny changing password/totp/mail if not admin except target is ownself
+	if notSelfOrAdmin {
+		if accountChange.Password != "" ||
+			accountChange.TotpEnabled != accountCurrent.TotpEnabled ||
+			accountChange.Mail != "" {
+			return response.NewPermissionError(), nil
+		}
 	}
 	// Update using input
 	col := s.md.Database("accounts").Collection("users")
@@ -228,30 +213,17 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if err := accountCurrent.UpdateName(col, accountChange.Name); err != nil {
 		return response.NewLockedErrorWithMessage(err.Error()), nil
 	}
-	if err := accountCurrent.UpdateApiSeq(accountChange.ApiSeq); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
-	}
-	if err := accountCurrent.UpdatePermission(accountChange.Permission); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
-	}
 	if err := accountCurrent.UpdatePassword(accountChange.OldPassword, accountChange.Password); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
-	if err := accountCurrent.UpdateDescription(accountChange.Description); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
-	}
-	if err := accountCurrent.UpdateMail(accountChange.Mail); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
-	}
-	if err := accountCurrent.UpdateFavorite(accountChange.Favorite); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
-	}
-	if err := accountCurrent.UpdateAccess(accountChange.Access); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
-	}
-	if err := accountCurrent.UpdateIpfs(accountChange.Ipfs); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
-	}
+	// Update current instance (they don't return errors since already validated)
+	accountCurrent.UpdateDescription(accountChange.Description)
+	accountCurrent.UpdatePermission(accountChange.Permission)
+	accountCurrent.UpdateApiSeq(accountChange.ApiSeq)
+	accountCurrent.UpdateMail(accountChange.Mail)
+	accountCurrent.UpdateFavorite(accountChange.Favorite)
+	accountCurrent.UpdateAccess(accountChange.Access)
+	accountCurrent.UpdateIpfs(accountChange.Ipfs)
 	// Update account
 	if err := s.ah.UpdateAccount(mongo_models.AccountID(accountID), *accountCurrent); err != nil {
 		return response.NewInternalError(), err
