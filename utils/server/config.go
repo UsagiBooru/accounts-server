@@ -1,8 +1,6 @@
 package server
 
 import (
-	"log"
-
 	"gopkg.in/ini.v1"
 )
 
@@ -20,7 +18,11 @@ func GetConfig() ConfigList {
 	// Load ini
 	cfg, err := ini.Load("config.ini")
 	if err != nil {
-		log.Fatalf("config.ini could not be loaded.")
+		Error("config.ini could not be loaded. Use default config.")
+		cfg, err = ini.Load("config.example.ini")
+		if err != nil {
+			Fatal("config.example.ini could not be loaded.")
+		}
 	}
 
 	// Parse to ConfigList struct
