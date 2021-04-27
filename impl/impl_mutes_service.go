@@ -61,23 +61,35 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 	if err != nil {
 		return response.NewConflictedError(), nil
 	}
-	// Get muteIDSeq
-	muteSequenceHelper := mongo_models.NewMongoSequenceHelper(s.md, "accounts", "muteID")
-	seq, err := muteSequenceHelper.GetSeq()
+	// Use transaction to prevent duplicate request
+	var newMute *mongo_models.MongoMuteStruct
+	err = s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
+		err := sc.StartTransaction()
+		if err != nil {
+			return err
+		}
+		// Get muteIDSeq
+		muteSequenceHelper := mongo_models.NewMongoSequenceHelper(s.md, "accounts", "muteID")
+		seq, err := muteSequenceHelper.GetSeq()
+		if err != nil {
+			return err
+		}
+		// Create new mute
+		newMute, err = s.mh.CreateMute(
+			seq+1,
+			muteStruct.TargetType,
+			muteStruct.TargetID,
+		)
+		if err != nil {
+			return err
+		}
+		// Update seq
+		if err := muteSequenceHelper.UpdateSeq(); err != nil {
+			return err
+		}
+		return sc.CommitTransaction(sc)
+	})
 	if err != nil {
-		return response.NewInternalError(), err
-	}
-	// Create new mute
-	newMute, err := s.mh.CreateMute(
-		seq+1,
-		muteStruct.TargetType,
-		muteStruct.TargetID,
-	)
-	if err != nil {
-		return response.NewInternalError(), err
-	}
-	// Update seq
-	if err := muteSequenceHelper.UpdateSeq(); err != nil {
 		return response.NewInternalError(), err
 	}
 	return gen.Response(200, newMute.ToOpenApi()), nil
