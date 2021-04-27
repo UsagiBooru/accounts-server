@@ -5,28 +5,46 @@ jobs:
     working_directory: ~/repo
     docker:
       - image: circleci/golang:1.15.8
+      - image: mongo:4.4.5
+        environment:
+          - MONGO_INITDB_ROOT_USERNAME=usagibooru
+          - MONGO_INITDB_ROOT_PASSWORD=kokoro_pyonpyon
+          - MONGO_INITDB_DATABASE=accounts
+          - TZ=Asia/Tokyo
     environment:
       TEST_RESULTS: /tmp/test-results
     steps:
       - checkout
-      - run: mkdir -p $TEST_RESULTS
+      - run:
+          name: Make test result dir
+          command: mkdir -p $TEST_RESULTS
       - restore_cache:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
       - run:
           name: Install Dependencies
-          command: go mod download
+          command: |
+            go mod download
+            go get -u github.com/jstemmer/go-junit-report
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
           paths:
             - "/go/pkg/mod"
       - run:
+          name: Waiting for MongoDB to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 27017 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MongoDB && exit 1
+      - run:
           name: Run tests
           command: |
-            go get -u github.com/jstemmer/go-junit-report
-            go test -docker -parallel=5 -timeout 300s -v 2>&1 | go-junit-report > ${TEST_RESULTS}/report.xml
+            go test ./impl -timeout 300s -v impl/* 2>&1 | go-junit-report > ${TEST_RESULTS}/report.xml
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
           path: /tmp/test-results
-
