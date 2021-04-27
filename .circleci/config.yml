@@ -29,9 +29,11 @@ jobs:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
       - run:
-          name: Install Dependencies
+          name: Install build dependencies
+          command: go mod download
+      - run:
+          name: Install test dependencies
           command: |
-            go mod download
             go get -u github.com/jstemmer/go-junit-report
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
@@ -50,7 +52,8 @@ jobs:
       - run:
           name: Run tests
           command: |
-            go test ./impl -timeout 300s -v impl/* 2>&1 | go-junit-report > ${TEST_RESULTS}/report.xml
+            go test ./impl -timeout 300s -cover -coverprofile=coverage.txt -v impl/* 2>&1 | go-junit-report > ${TEST_RESULTS}/report.xml
+            bash <(curl -s https://codecov.io/bash)
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
