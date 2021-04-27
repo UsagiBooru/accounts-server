@@ -1,6 +1,7 @@
 # Accounts API Server
 UsagiBooruアカウント関連API  
 (開発中)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FUsagiBooru%2Faccounts-server.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FUsagiBooru%2Faccounts-server?ref=badge_shield)
 [![Go Report Card](https://goreportcard.com/badge/github.com/UsagiBooru/accounts-server)](https://goreportcard.com/report/github.com/UsagiBooru/accounts-server)
 [![CircleCI](https://circleci.com/gh/UsagiBooru/accounts-server.svg?style=svg)](https://circleci.com/gh/circleci/circleci-docs)
 
@@ -36,4 +37,5 @@ Once image is built use
 docker run --rm -it gen 
 ```
 
-
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FUsagiBooru%2Faccounts-server.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FUsagiBooru%2Faccounts-server?ref=badge_large)
