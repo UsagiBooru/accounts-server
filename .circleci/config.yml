@@ -12,7 +12,14 @@ jobs:
           - MONGO_INITDB_DATABASE=accounts
           - TZ=Asia/Tokyo
     environment:
-      TEST_RESULTS: /tmp/test-results
+      MONGO_HOST: "localhost:27017"
+      MONGO_USER: "usagibooru"
+      MONGO_PASS: "kokoro_pyonpyon"
+      ELASTIC_HOST: "localhost:9200"
+      ELASTIC_USER: ""
+      ELASTIC_PASS: ""
+      JWT_SECRET: "UNSAFE_SECRET_KEY_CHANGE_ME!"
+      TEST_RESULTS: "/tmp/test-results"
     steps:
       - checkout
       - run:

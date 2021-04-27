@@ -1,7 +1,9 @@
 package server
 
 import (
-	"gopkg.in/ini.v1"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type ConfigList struct {
@@ -16,26 +18,21 @@ type ConfigList struct {
 
 func GetConfig() ConfigList {
 	// Load ini
-	cfg, err := ini.Load("config.ini")
-	if err != nil {
-		Error("config.ini could not be loaded. Use default config.")
-		cfg, err = ini.Load("config.example.ini")
-		if err != nil {
-			Fatal("config.example.ini could not be loaded.")
+	if envFilePath := os.Getenv("GO_ENV"); envFilePath != "" {
+		if err := godotenv.Load(envFilePath); err != nil {
+			Fatal("envFile " + envFilePath + "could not be loaded")
 		}
+	} else {
+		_ = godotenv.Load(".env")
 	}
-
 	// Parse to ConfigList struct
-	mongoSection := cfg.Section("MongoDB")
-	elasticSection := cfg.Section("ElasticSearch")
-	secretSection := cfg.Section("Secret")
 	return ConfigList{
-		MongoHost:   mongoSection.Key("host").String(),
-		MongoUser:   mongoSection.Key("user").String(),
-		MongoPass:   mongoSection.Key("pass").String(),
-		ElasticHost: elasticSection.Key("host").String(),
-		ElasticUser: elasticSection.Key("user").String(),
-		ElasticPass: elasticSection.Key("pass").String(),
-		JwtSecret:   secretSection.Key("jwt").String(),
+		MongoHost:   os.Getenv("MONGO_HOST"),
+		MongoUser:   os.Getenv("MONGO_USER"),
+		MongoPass:   os.Getenv("MONGO_PASS"),
+		ElasticHost: os.Getenv("ELASTIC_HOST"),
+		ElasticUser: os.Getenv("ELASTIC_USER"),
+		ElasticPass: os.Getenv("ELASTIC_PASS"),
+		JwtSecret:   os.Getenv("JWT_SECRET"),
 	}
 }
