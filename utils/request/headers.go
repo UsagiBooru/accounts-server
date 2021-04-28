@@ -8,7 +8,10 @@ import (
 
 type key int
 
+// CtxUserId is context key for getting id
 const CtxUserId key = 1
+
+// CtxUserPermission is context key for getting permission
 const CtxUserPermission key = 2
 
 // GetUserPermission gets a requested user's permission from context

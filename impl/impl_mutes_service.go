@@ -13,6 +13,7 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
+// MutesApiImplService is type of implemented api service (http.Handler)
 type MutesApiImplService struct {
 	gen.MutesApiService
 	md       *mongo.Client

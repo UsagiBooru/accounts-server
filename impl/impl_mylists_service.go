@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// MylistApiImplService is type of implemented api service (http.Handler)
 type MylistApiImplService struct {
 	gen.MylistApiService
 	md *mongo.Client

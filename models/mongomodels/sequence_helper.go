@@ -16,11 +16,12 @@ type MongoSequenceHelper struct {
 	seqCurrent int32
 }
 
-// NewMongoMylistHelper creates a helper for handle get and update sequence
+// NewMongoSequenceHelper creates a helper for handle get and update sequence
 func NewMongoSequenceHelper(md *mongo.Client, dbName string, seqName string) MongoSequenceHelper {
 	return MongoSequenceHelper{md, dbName, seqName, 0}
 }
 
+// GetSeq gets the latest - 1 sequence number from database
 func (m *MongoSequenceHelper) GetSeq() (resp int32, err error) {
 	col := m.md.Database(m.dbName).Collection("sequence")
 	filter := bson.M{"key": m.seqName}
@@ -32,6 +33,7 @@ func (m *MongoSequenceHelper) GetSeq() (resp int32, err error) {
 	return int32(seq.Value), nil
 }
 
+// UpdateSeq increases sequence number of database
 func (m *MongoSequenceHelper) UpdateSeq() (err error) {
 	col := m.md.Database(m.dbName).Collection("sequence")
 	filter := bson.M{"key": m.seqName}

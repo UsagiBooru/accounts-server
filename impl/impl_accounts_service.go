@@ -17,6 +17,7 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
+// AccountsApiImplService is type of implemented api service (http.Handler)
 type AccountsApiImplService struct {
 	gen.AccountsApiService
 	// es *elasticsearch.Client
@@ -150,9 +151,8 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	if err != nil {
 		if err == server.ErrInviteNotFound {
 			return response.NewNotFoundErrorWithMessage(err.Error()), nil
-		} else {
-			return response.NewInternalError(), nil
 		}
+		return response.NewInternalError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
 }
@@ -293,11 +293,11 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 	claims["permission"] = account.Permission
 	claims["iat"] = time.Now()
 	claims["exp"] = time.Now().Add(TWO_MONTH).Unix()
-	signed_token, err := token.SignedString([]byte(s.jwtSecret))
+	signedToken, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {
 		return response.NewInternalError(), nil
 	}
-	return gen.Response(200, gen.PostLoginWithFormResponse{ApiKey: signed_token}), nil
+	return gen.Response(200, gen.PostLoginWithFormResponse{ApiKey: signedToken}), nil
 }
 
 // GetUploadHistory - Get upload history

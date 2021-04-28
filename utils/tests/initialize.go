@@ -15,6 +15,7 @@ import (
 
 var parallelFlag = flag.Bool("docker", false, "Set true to use parallel test(Local), otherwise to simple test(CI)")
 
+// GetDatabaseConnection creates connection to database
 func GetDatabaseConnection() (db *mongo.Client, shutdown func(), isParallel bool) {
 	var err error
 	if *parallelFlag {
