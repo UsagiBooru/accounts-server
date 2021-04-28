@@ -142,8 +142,8 @@ func (f *MongoAccountStruct) UpdateDisplayID(col *mongo.Collection, displayID st
 		return nil
 	}
 	// Deny if displayID conflicted
-	if u := col.FindOne(context.Background(), bson.M{"displayID": displayID}); u != nil {
-		return errors.New("specified displayID is already used")
+	if count, _ := col.CountDocuments(context.Background(), bson.M{"displayID": displayID}); count > 0 {
+		return errors.New("specified name is already used")
 	}
 	f.DisplayID = displayID
 	return nil
@@ -154,7 +154,7 @@ func (f *MongoAccountStruct) UpdateName(col *mongo.Collection, name string) (err
 		return nil
 	}
 	// Deny if displayID conflicted
-	if u := col.FindOne(context.Background(), bson.M{"name": name}); u != nil {
+	if count, _ := col.CountDocuments(context.Background(), bson.M{"name": name}); count > 0 {
 		return errors.New("specified name is already used")
 	}
 	f.Name = name

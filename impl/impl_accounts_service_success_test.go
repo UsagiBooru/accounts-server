@@ -103,6 +103,29 @@ func TestEditAccountSuccessOnChangeName(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
+func TestEditAccountSuccessOnChangeDisplayID(t *testing.T) {
+	s, shutdown, isParallel := GetAccountsServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	editAccount := gen.AccountStruct{
+		DisplayID: "debugaccount",
+	}
+	req_json, _ := json.Marshal(editAccount)
+	req := httptest.NewRequest(
+		http.MethodPatch,
+		"/accounts/1",
+		bytes.NewBuffer(req_json),
+	)
+	req = tests.SetAdminUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
 func TestGetAccountMeSuccessFromAdmin(t *testing.T) {
 	s, shutdown, isParallel := GetAccountsServer()
 	if isParallel {
