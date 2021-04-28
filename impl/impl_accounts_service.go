@@ -193,7 +193,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	if (issuerPermission == account_const.PERMISSION_MOD &&
 		accountCurrent.Permission >= account_const.PERMISSION_MOD &&
 		notSelf) ||
-		(accountChange.Permission != accountCurrent.Permission && notAdmin) ||
+		(accountChange.Permission != accountCurrent.Permission && accountChange.Permission != account_const.PERMISSION_USER && notAdmin) ||
 		((accountChange.Access != gen.AccountStructAccess{}) && notMod) {
 		return response.NewPermissionError(), nil
 	}

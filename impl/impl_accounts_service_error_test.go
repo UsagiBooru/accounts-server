@@ -423,6 +423,7 @@ func TestEditAccountBadRequestOnChangeWithWrongPassword(t *testing.T) {
 	defer shutdown()
 	editAccount := gen.AccountStruct{
 		OldPassword: "domao",
+		Password:    "KafuuChino",
 	}
 	req_json, _ := json.Marshal(editAccount)
 	req := httptest.NewRequest(
