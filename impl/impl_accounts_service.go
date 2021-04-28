@@ -6,7 +6,7 @@ import (
 
 	"github.com/UsagiBooru/accounts-server/gen"
 	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
-	"github.com/UsagiBooru/accounts-server/models/mongo_models"
+	"github.com/UsagiBooru/accounts-server/models/mongomodels"
 	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/UsagiBooru/accounts-server/utils/response"
 	"github.com/UsagiBooru/accounts-server/utils/server"
@@ -21,8 +21,8 @@ type AccountsApiImplService struct {
 	gen.AccountsApiService
 	// es *elasticsearch.Client
 	md        *mongo.Client
-	ih        mongo_models.MongoInviteHelper
-	ah        mongo_models.MongoAccountHelper
+	ih        mongomodels.MongoInviteHelper
+	ah        mongomodels.MongoAccountHelper
 	validate  *validator.Validate
 	jwtSecret string
 }
@@ -32,8 +32,8 @@ func NewAccountsApiImplService(md *mongo.Client, jwtSecret string) gen.AccountsA
 		AccountsApiService: gen.AccountsApiService{},
 		// es:                 server.NewElasticSearchClient(conf.ElasticHost, conf.ElasticUser, conf.ElasticPass),
 		md:        md,
-		ih:        mongo_models.NewMongoInviteHelper(md),
-		ah:        mongo_models.NewMongoAccountHelper(md),
+		ih:        mongomodels.NewMongoInviteHelper(md),
+		ah:        mongomodels.NewMongoAccountHelper(md),
 		validate:  validator.New(),
 		jwtSecret: jwtSecret,
 	}
@@ -42,7 +42,7 @@ func NewAccountsApiImplService(md *mongo.Client, jwtSecret string) gen.AccountsA
 // GetAccount - Get account info
 func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32) (gen.ImplResponse, error) {
 	// Find target account
-	account, err := s.ah.FindAccount(mongo_models.AccountID(accountID))
+	account, err := s.ah.FindAccount(mongomodels.AccountID(accountID))
 	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
@@ -78,7 +78,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 	); err != nil {
 		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
-	var account *mongo_models.MongoAccountStruct
+	var account *mongomodels.MongoAccountStruct
 	// Use transaction to prevent duplicate request
 	err = s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
 		err := sc.StartTransaction()
@@ -86,7 +86,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 			return err
 		}
 		// Create sequence helper
-		accountSequenceHelper := mongo_models.NewMongoSequenceHelper(s.md, "accounts", "accountID")
+		accountSequenceHelper := mongomodels.NewMongoSequenceHelper(s.md, "accounts", "accountID")
 		// Get latest -1 accountID
 		seq, err := accountSequenceHelper.GetSeq()
 		if err != nil {
@@ -102,7 +102,7 @@ func (s *AccountsApiImplService) CreateAccount(ctx context.Context, accountStruc
 		}
 		// Find inviter account
 		inviterAccountID := invite.Inviter
-		newAccountID := mongo_models.AccountID(seq + 1)
+		newAccountID := mongomodels.AccountID(seq + 1)
 		inviter, err := s.ah.FindAccount(inviterAccountID)
 		if err != nil {
 			return err
@@ -168,7 +168,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 		return response.NewRequestErrorWithMessage(err.Error()), nil
 	}
 	// Find target account
-	accountCurrent, err := s.ah.FindAccount(mongo_models.AccountID(accountID))
+	accountCurrent, err := s.ah.FindAccount(mongomodels.AccountID(accountID))
 	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
@@ -225,7 +225,7 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	accountCurrent.UpdateAccess(accountChange.Access)
 	accountCurrent.UpdateIpfs(accountChange.Ipfs)
 	// Update account
-	if err := s.ah.UpdateAccount(mongo_models.AccountID(accountID), *accountCurrent); err != nil {
+	if err := s.ah.UpdateAccount(mongomodels.AccountID(accountID), *accountCurrent); err != nil {
 		return response.NewInternalError(), err
 	}
 	return gen.Response(200, accountCurrent.ToOpenApi(s.md)), nil
@@ -238,7 +238,7 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 		return response.NewInternalError(), err
 	}
 	// Find target account
-	account, err := s.ah.FindAccount(mongo_models.AccountID(accountID))
+	account, err := s.ah.FindAccount(mongomodels.AccountID(accountID))
 	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
@@ -259,7 +259,7 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 	} else {
 		account.AccountStatus = account_const.STATUS_DELETED_BY_MOD
 	}
-	if err := s.ah.UpdateAccount(mongo_models.AccountID(accountID), *account); err != nil {
+	if err := s.ah.UpdateAccount(mongomodels.AccountID(accountID), *account); err != nil {
 		return response.NewInternalError(), err
 	}
 	return gen.Response(204, nil), nil
@@ -272,7 +272,7 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 	// Find target account
 	col := s.md.Database("accounts").Collection("users")
 	filter := bson.M{"displayID": accountIdOrMail}
-	var account mongo_models.MongoAccountStruct
+	var account mongomodels.MongoAccountStruct
 	if err := col.FindOne(context.Background(), filter).Decode(&account); err != nil {
 		return response.NewUnauthorizedError(), nil
 	}
@@ -317,7 +317,7 @@ func (s *AccountsApiImplService) GetAccountMe(ctx context.Context) (gen.ImplResp
 		return response.NewInternalError(), nil
 	}
 	// Find target account
-	account, err := s.ah.FindAccount(mongo_models.AccountID(issuerID))
+	account, err := s.ah.FindAccount(mongomodels.AccountID(issuerID))
 	if err != nil {
 		return response.NewNotFoundError(), nil
 	}

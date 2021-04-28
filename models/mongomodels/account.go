@@ -1,4 +1,4 @@
-package mongo_models
+package mongomodels
 
 import (
 	"context"

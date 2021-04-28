@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
-	"github.com/UsagiBooru/accounts-server/models/mongo_models"
+	"github.com/UsagiBooru/accounts-server/models/mongomodels"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -24,7 +24,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 	col := m.Database("accounts").Collection("users")
 	users := []interface{}{
 		// Admin account
-		mongo_models.MongoAccountStruct{
+		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
 			AccountStatus: account_const.STATUS_ACTIVE,
@@ -38,7 +38,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 			Name:          "ドマオー",
 			Description:   "",
 			Favorite:      0,
-			Access: mongo_models.MongoAccountStructAccess{
+			Access: mongomodels.MongoAccountStructAccess{
 				CanInvite:      true,
 				CanLike:        true,
 				CanComment:     true,
@@ -46,18 +46,18 @@ func InitAccountDatabase(m *mongo.Client) error {
 				CanEditPost:    true,
 				CanApprovePost: true,
 			},
-			Inviter: mongo_models.LightMongoAccountStruct{
+			Inviter: mongomodels.LightMongoAccountStruct{
 				AccountID: 1,
 			},
-			Invite: mongo_models.MongoAccountStructInvite{
+			Invite: mongomodels.MongoAccountStructInvite{
 				Code:         "dev",
 				InvitedCount: -1,
 			},
-			Notify: mongo_models.MongoAccountStructNotify{
+			Notify: mongomodels.MongoAccountStructNotify{
 				HasLineNotify: false,
 				HasWebNotify:  false,
 			},
-			Ipfs: mongo_models.MongoAccountStructIpfs{
+			Ipfs: mongomodels.MongoAccountStructIpfs{
 				GatewayUrl:     "https://cloudflare-ipfs.com",
 				NodeUrl:        "",
 				GatewayEnabled: false,
@@ -66,7 +66,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 			},
 		},
 		// Modelator account
-		mongo_models.MongoAccountStruct{
+		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
 			AccountStatus: account_const.STATUS_ACTIVE,
@@ -80,7 +80,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 			Name:          "香風智乃",
 			Description:   "",
 			Favorite:      0,
-			Access: mongo_models.MongoAccountStructAccess{
+			Access: mongomodels.MongoAccountStructAccess{
 				CanInvite:      true,
 				CanLike:        true,
 				CanComment:     true,
@@ -88,18 +88,18 @@ func InitAccountDatabase(m *mongo.Client) error {
 				CanEditPost:    true,
 				CanApprovePost: true,
 			},
-			Inviter: mongo_models.LightMongoAccountStruct{
+			Inviter: mongomodels.LightMongoAccountStruct{
 				AccountID: 1,
 			},
-			Invite: mongo_models.MongoAccountStructInvite{
+			Invite: mongomodels.MongoAccountStructInvite{
 				Code:         "dev",
 				InvitedCount: -1,
 			},
-			Notify: mongo_models.MongoAccountStructNotify{
+			Notify: mongomodels.MongoAccountStructNotify{
 				HasLineNotify: false,
 				HasWebNotify:  false,
 			},
-			Ipfs: mongo_models.MongoAccountStructIpfs{
+			Ipfs: mongomodels.MongoAccountStructIpfs{
 				GatewayUrl:     "https://cloudflare-ipfs.com",
 				NodeUrl:        "",
 				GatewayEnabled: false,
@@ -108,7 +108,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 			},
 		},
 		// User account
-		mongo_models.MongoAccountStruct{
+		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
 			AccountStatus: account_const.STATUS_ACTIVE,
@@ -122,7 +122,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 			Name:          "保登心愛",
 			Description:   "",
 			Favorite:      0,
-			Access: mongo_models.MongoAccountStructAccess{
+			Access: mongomodels.MongoAccountStructAccess{
 				CanInvite:      true,
 				CanLike:        true,
 				CanComment:     true,
@@ -130,18 +130,18 @@ func InitAccountDatabase(m *mongo.Client) error {
 				CanEditPost:    true,
 				CanApprovePost: true,
 			},
-			Inviter: mongo_models.LightMongoAccountStruct{
+			Inviter: mongomodels.LightMongoAccountStruct{
 				AccountID: 2,
 			},
-			Invite: mongo_models.MongoAccountStructInvite{
+			Invite: mongomodels.MongoAccountStructInvite{
 				Code:         "dev",
 				InvitedCount: -1,
 			},
-			Notify: mongo_models.MongoAccountStructNotify{
+			Notify: mongomodels.MongoAccountStructNotify{
 				HasLineNotify: false,
 				HasWebNotify:  false,
 			},
-			Ipfs: mongo_models.MongoAccountStructIpfs{
+			Ipfs: mongomodels.MongoAccountStructIpfs{
 				GatewayUrl:     "https://cloudflare-ipfs.com",
 				NodeUrl:        "",
 				GatewayEnabled: false,
@@ -150,7 +150,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 			},
 		},
 		// Deleted account
-		mongo_models.MongoAccountStruct{
+		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
 			AccountStatus: account_const.STATUS_DELETED_BY_MOD,
@@ -164,7 +164,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 			Name:          "削除済みアカウント",
 			Description:   "",
 			Favorite:      0,
-			Access: mongo_models.MongoAccountStructAccess{
+			Access: mongomodels.MongoAccountStructAccess{
 				CanInvite:      true,
 				CanLike:        true,
 				CanComment:     true,
@@ -172,18 +172,18 @@ func InitAccountDatabase(m *mongo.Client) error {
 				CanEditPost:    true,
 				CanApprovePost: true,
 			},
-			Inviter: mongo_models.LightMongoAccountStruct{
+			Inviter: mongomodels.LightMongoAccountStruct{
 				AccountID: 3,
 			},
-			Invite: mongo_models.MongoAccountStructInvite{
+			Invite: mongomodels.MongoAccountStructInvite{
 				Code:         "dev",
 				InvitedCount: -1,
 			},
-			Notify: mongo_models.MongoAccountStructNotify{
+			Notify: mongomodels.MongoAccountStructNotify{
 				HasLineNotify: false,
 				HasWebNotify:  false,
 			},
-			Ipfs: mongo_models.MongoAccountStructIpfs{
+			Ipfs: mongomodels.MongoAccountStructIpfs{
 				GatewayUrl:     "https://cloudflare-ipfs.com",
 				NodeUrl:        "",
 				GatewayEnabled: false,
@@ -197,7 +197,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 	}
 	// Create invite
 	col = m.Database("accounts").Collection("invites")
-	invite := mongo_models.MongoInvite{
+	invite := mongomodels.MongoInvite{
 		ID:      primitive.NewObjectID(),
 		Code:    "devcode1",
 		Inviter: 1,
@@ -208,7 +208,7 @@ func InitAccountDatabase(m *mongo.Client) error {
 	}
 	// Create sequence
 	col = m.Database("accounts").Collection("sequence")
-	seq := mongo_models.MongoSequence{
+	seq := mongomodels.MongoSequence{
 		ID:    primitive.NewObjectID(),
 		Key:   "accountID",
 		Value: 4,

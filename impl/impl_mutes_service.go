@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/UsagiBooru/accounts-server/gen"
-	"github.com/UsagiBooru/accounts-server/models/mongo_models"
+	"github.com/UsagiBooru/accounts-server/models/mongomodels"
 	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/UsagiBooru/accounts-server/utils/response"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,8 +16,8 @@ import (
 type MutesApiImplService struct {
 	gen.MutesApiService
 	md       *mongo.Client
-	ah       mongo_models.MongoAccountHelper
-	mh       mongo_models.MongoMuteHelper
+	ah       mongomodels.MongoAccountHelper
+	mh       mongomodels.MongoMuteHelper
 	validate *validator.Validate
 }
 
@@ -25,8 +25,8 @@ func NewMutesApiImplService(md *mongo.Client) gen.MutesApiServicer {
 	return &MutesApiImplService{
 		MutesApiService: gen.MutesApiService{},
 		md:              md,
-		ah:              mongo_models.NewMongoAccountHelper(md),
-		mh:              mongo_models.NewMongoMuteHelper(md),
+		ah:              mongomodels.NewMongoAccountHelper(md),
+		mh:              mongomodels.NewMongoMuteHelper(md),
 		validate:        validator.New(),
 	}
 }
@@ -52,24 +52,24 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 		return response.NewPermissionErrorWithMessage(err.Error()), err
 	}
 	// Find target account
-	_, err = s.ah.FindAccount(mongo_models.AccountID(issuerID))
+	_, err = s.ah.FindAccount(mongomodels.AccountID(issuerID))
 	if err != nil {
 		return response.NewNotFoundErrorWithMessage("specified account was not found"), nil
 	}
 	// Find mute does already exists
-	err = s.mh.FindDuplicatedMute(muteStruct.TargetType, muteStruct.TargetID, mongo_models.AccountID(issuerID))
+	err = s.mh.FindDuplicatedMute(muteStruct.TargetType, muteStruct.TargetID, mongomodels.AccountID(issuerID))
 	if err != nil {
 		return response.NewConflictedError(), nil
 	}
 	// Use transaction to prevent duplicate request
-	var newMute *mongo_models.MongoMuteStruct
+	var newMute *mongomodels.MongoMuteStruct
 	err = s.md.UseSession(ctx, func(sc mongo.SessionContext) error {
 		err := sc.StartTransaction()
 		if err != nil {
 			return err
 		}
 		// Get muteIDSeq
-		muteSequenceHelper := mongo_models.NewMongoSequenceHelper(s.md, "accounts", "muteID")
+		muteSequenceHelper := mongomodels.NewMongoSequenceHelper(s.md, "accounts", "muteID")
 		seq, err := muteSequenceHelper.GetSeq()
 		if err != nil {
 			return err

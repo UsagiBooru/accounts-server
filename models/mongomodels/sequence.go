@@ -1,4 +1,4 @@
-package mongo_models
+package mongomodels
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/UsagiBooru/accounts-server/gen"
-	"github.com/UsagiBooru/accounts-server/models/mongo_models"
+	"github.com/UsagiBooru/accounts-server/models/mongomodels"
 	"github.com/UsagiBooru/accounts-server/utils/server"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -14,8 +14,8 @@ import (
 type MylistApiImplService struct {
 	gen.MylistApiService
 	md *mongo.Client
-	ah mongo_models.MongoAccountHelper
-	mh mongo_models.MongoMuteHelper
+	ah mongomodels.MongoAccountHelper
+	mh mongomodels.MongoMuteHelper
 }
 
 func NewMylistApiImplService() gen.MylistApiServicer {
@@ -24,8 +24,8 @@ func NewMylistApiImplService() gen.MylistApiServicer {
 	return &MylistApiImplService{
 		MylistApiService: gen.MylistApiService{},
 		md:               md,
-		ah:               mongo_models.NewMongoAccountHelper(md),
-		mh:               mongo_models.NewMongoMuteHelper(md),
+		ah:               mongomodels.NewMongoAccountHelper(md),
+		mh:               mongomodels.NewMongoMuteHelper(md),
 	}
 }
 
