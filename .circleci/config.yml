@@ -9,10 +9,10 @@ jobs:
       - image: circleci/golang:1.15.8
       - image: mongo:4.4.5
         environment:
-          - MONGO_INITDB_ROOT_USERNAME=usagibooru
-          - MONGO_INITDB_ROOT_PASSWORD=kokoro_pyonpyon
-          - MONGO_INITDB_DATABASE=accounts
-          - TZ=Asia/Tokyo
+          MONGO_INITDB_ROOT_USERNAME: "usagibooru"
+          MONGO_INITDB_ROOT_PASSWORD: "kokoro_pyonpyon"
+          MONGO_INITDB_DATABASE: "accounts"
+          TZ: "Asia/Tokyo"
     environment:
       MONGO_HOST: "localhost:27017"
       MONGO_USER: "usagibooru"
@@ -60,5 +60,4 @@ jobs:
       - store_artifacts:
           path: /tmp/test-results
       - codecov/upload:
-          when: always
           file: /tmp/test-results/coverage.txt
