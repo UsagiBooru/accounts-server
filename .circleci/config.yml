@@ -60,4 +60,5 @@ jobs:
       - store_artifacts:
           path: /tmp/test-results
       - codecov/upload:
+          when: always
           file: /tmp/test-results/coverage.txt
