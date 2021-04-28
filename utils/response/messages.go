@@ -16,6 +16,7 @@ const (
 	MessageInternalError     = "Unfortunately, the server exploded."
 )
 
+// NewRequestError creates 400 BadRequest response
 func NewRequestError() gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusBadRequest,
@@ -23,6 +24,7 @@ func NewRequestError() gen.ImplResponse {
 	}
 }
 
+// NewRequestErrorWithMessage creates 400 BadRequest response with using message
 func NewRequestErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusBadRequest,
@@ -30,6 +32,7 @@ func NewRequestErrorWithMessage(message string) gen.ImplResponse {
 	}
 }
 
+// NewLockedError creates 423 Locked response
 func NewLockedError() gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusLocked,
@@ -37,6 +40,7 @@ func NewLockedError() gen.ImplResponse {
 	}
 }
 
+// NewLockedErrorWithMessage creates 423 Locked response with using message
 func NewLockedErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusLocked,
@@ -44,6 +48,7 @@ func NewLockedErrorWithMessage(message string) gen.ImplResponse {
 	}
 }
 
+// NewNotFoundError creates 404 NotFound response
 func NewNotFoundError() gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusNotFound,
@@ -51,6 +56,7 @@ func NewNotFoundError() gen.ImplResponse {
 	}
 }
 
+// NewNotFoundErrorWithMessage creates 404 NotFound response with using message
 func NewNotFoundErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusNotFound,
@@ -58,6 +64,7 @@ func NewNotFoundErrorWithMessage(message string) gen.ImplResponse {
 	}
 }
 
+// NewUnauthorizedError creates 401 Unauthorized response
 func NewUnauthorizedError() gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusUnauthorized,
@@ -65,6 +72,7 @@ func NewUnauthorizedError() gen.ImplResponse {
 	}
 }
 
+// NewUnauthorizedErrorWithMessage creates 401 Unauthorized response with using message
 func NewUnauhorizedErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusUnauthorized,
@@ -72,6 +80,7 @@ func NewUnauhorizedErrorWithMessage(message string) gen.ImplResponse {
 	}
 }
 
+// NewPermissionError creates 403 Forbidden response
 func NewPermissionError() gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusForbidden,
@@ -79,6 +88,7 @@ func NewPermissionError() gen.ImplResponse {
 	}
 }
 
+// NewPermissionErrorWithMessage creates 403 Forbidden response with using message
 func NewPermissionErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusForbidden,
@@ -86,6 +96,7 @@ func NewPermissionErrorWithMessage(message string) gen.ImplResponse {
 	}
 }
 
+// NewInternalError creates 500 InternalError response
 func NewInternalError() gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusInternalServerError,
@@ -93,6 +104,7 @@ func NewInternalError() gen.ImplResponse {
 	}
 }
 
+// NewInternalErrorWithMessage creates 500 InternalError response with using message
 func NewInternalErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusInternalServerError,
@@ -100,6 +112,7 @@ func NewInternalErrorWithMessage(message string) gen.ImplResponse {
 	}
 }
 
+// NewConflictedError creates 409 ConflictError response
 func NewConflictedError() gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusConflict,
@@ -107,6 +120,7 @@ func NewConflictedError() gen.ImplResponse {
 	}
 }
 
+// NewConflictedErrorWithMessage creates 409 ConflictError response with using message
 func NewConflictedErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusConflict,
