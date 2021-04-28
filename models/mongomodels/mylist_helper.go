@@ -13,6 +13,7 @@ type MongoMylistHelper struct {
 	col *mongo.Collection
 }
 
+// NewMongoMylistHelper creates a helper for handle mylists endpoints
 func NewMongoMylistHelper(md *mongo.Client) MongoMylistHelper {
 	return MongoMylistHelper{md.Database("accounts").Collection("mylists")}
 }

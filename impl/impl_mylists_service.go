@@ -18,6 +18,7 @@ type MylistApiImplService struct {
 	mh mongomodels.MongoMuteHelper
 }
 
+// NewMylistApiImplService creates mylist api service
 func NewMylistApiImplService() gen.MylistApiServicer {
 	conf := server.GetConfig()
 	md := server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)

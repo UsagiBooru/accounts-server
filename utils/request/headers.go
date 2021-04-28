@@ -11,6 +11,7 @@ type key int
 const CtxUserId key = 1
 const CtxUserPermission key = 2
 
+// GetUserPermission gets a requested user's permission from context
 func GetUserPermission(ctx context.Context) (int32, error) {
 	v := ctx.Value(CtxUserPermission)
 	permission, ok := v.(string)
@@ -24,6 +25,7 @@ func GetUserPermission(ctx context.Context) (int32, error) {
 	return int32(permissionNumber), nil
 }
 
+// GetUserID gets a requested user's id from context
 func GetUserID(ctx context.Context) (int32, error) {
 	v := ctx.Value(CtxUserId)
 	userID, ok := v.(string)
@@ -37,7 +39,7 @@ func GetUserID(ctx context.Context) (int32, error) {
 	return int32(userIDNumber), nil
 }
 
-// load context shorthand
+// GetHeaders gets requested user's permission and id from context
 func GetHeaders(ctx context.Context) (int32, int32, error) {
 	issuerID, err := GetUserID(ctx)
 	if err != nil {

@@ -27,6 +27,7 @@ type AccountsApiImplService struct {
 	jwtSecret string
 }
 
+// NewAccountsApiImplService creates accounts api service
 func NewAccountsApiImplService(md *mongo.Client, jwtSecret string) gen.AccountsApiServicer {
 	return &AccountsApiImplService{
 		AccountsApiService: gen.AccountsApiService{},

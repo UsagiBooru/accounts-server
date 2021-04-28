@@ -7,6 +7,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 )
 
+// NewElasticSearchClient creates a new elasticsearch client
 func NewElasticSearchClient(host, user, pass string) *elasticsearch.Client {
 	addresses := []string{}
 	for _, address := range strings.Split(host, ",") {

@@ -21,6 +21,7 @@ type MutesApiImplService struct {
 	validate *validator.Validate
 }
 
+// NewMutesApiImplService creates mutes api service
 func NewMutesApiImplService(md *mongo.Client) gen.MutesApiServicer {
 	return &MutesApiImplService{
 		MutesApiService: gen.MutesApiService{},

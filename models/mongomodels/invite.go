@@ -4,6 +4,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// MongoInvite - 招待コード情報
 type MongoInvite struct {
 	// MongoのユニークID
 	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`

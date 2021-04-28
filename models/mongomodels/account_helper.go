@@ -15,12 +15,14 @@ type MongoAccountHelper struct {
 	col *mongo.Collection
 }
 
+// NewMongoAccountHelper creates a helper for handle account endpoints
 func NewMongoAccountHelper(md *mongo.Client) MongoAccountHelper {
 	return MongoAccountHelper{
 		md.Database("accounts").Collection("users"),
 	}
 }
 
+// ToMongo converts specified openapi struct to mongo struct
 func (h *MongoAccountHelper) ToMongo(ac gen.AccountStruct) MongoAccountStruct {
 	inviterResp := LightMongoAccountStruct{
 		AccountID: AccountID(ac.AccountID),
@@ -62,6 +64,7 @@ func (h *MongoAccountHelper) ToMongo(ac gen.AccountStruct) MongoAccountStruct {
 	return resp
 }
 
+// CreateAccount creates new mongo account instance
 func (h *MongoAccountHelper) CreateAccount(
 	accountID AccountID,
 	displayID string,
@@ -126,6 +129,7 @@ func (h *MongoAccountHelper) CreateAccount(
 	return &account, nil
 }
 
+// FindAccount finds specified account from database
 func (h *MongoAccountHelper) FindAccount(accountID AccountID) (*MongoAccountStruct, error) {
 	filter := bson.M{"accountID": int32(accountID)}
 	var account MongoAccountStruct
@@ -135,6 +139,7 @@ func (h *MongoAccountHelper) FindAccount(accountID AccountID) (*MongoAccountStru
 	return &account, nil
 }
 
+// DeleteAccount set delete flag to specified account
 func (h *MongoAccountHelper) DeleteAccount(accountID AccountID, deleteMethod int32) error {
 	account, err := h.FindAccount(accountID)
 	if err != nil {
@@ -149,6 +154,7 @@ func (h *MongoAccountHelper) DeleteAccount(accountID AccountID, deleteMethod int
 	return nil
 }
 
+// UpdateAccount updates specified account with using specified instance
 func (h *MongoAccountHelper) UpdateAccount(accountID AccountID, newStruct MongoAccountStruct) error {
 	_, err := h.FindAccount(accountID)
 	if err != nil {
@@ -162,6 +168,7 @@ func (h *MongoAccountHelper) UpdateAccount(accountID AccountID, newStruct MongoA
 	return nil
 }
 
+// UpdateInvite updates specified account's invite info
 func (h *MongoAccountHelper) UpdateInvite(accountID AccountID, code string, invitedCount int32) error {
 	filter := bson.M{"accountID": int32(accountID)}
 	set := bson.M{"$set": bson.M{

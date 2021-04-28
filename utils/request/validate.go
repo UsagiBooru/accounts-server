@@ -7,6 +7,7 @@ import (
 	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
 )
 
+// ValidateRequiredFields validates required fields are not empty
 func ValidateRequiredFields(req interface{}, fields []string) error {
 	reqJson, err := json.Marshal(req)
 	if err != nil {
@@ -24,6 +25,7 @@ func ValidateRequiredFields(req interface{}, fields []string) error {
 	return nil
 }
 
+// ValidatePermission validates issuer account can change specified account
 func ValidatePermission(issuerPermission int32, issuerID int32, targetID int32) error {
 	notMod := issuerPermission < account_const.PERMISSION_MOD
 	if targetID != issuerID && notMod {

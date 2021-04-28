@@ -19,7 +19,7 @@ func GetDatabaseConnection() (db *mongo.Client, shutdown func(), isParallel bool
 	var err error
 	if *parallelFlag {
 		server.Debug("Using mongo container")
-		db, shutdown, err = GenerateMongoTestContainer()
+		db, shutdown, err = generateMongoTestContainer()
 		if err != nil {
 			server.Fatal(err.Error())
 		}
@@ -32,13 +32,13 @@ func GetDatabaseConnection() (db *mongo.Client, shutdown func(), isParallel bool
 		err = nil
 		isParallel = false
 	}
-	if err := ReGenerateDatabase(db); err != nil {
+	if err := reGenerateDatabase(db); err != nil {
 		server.Fatal(err.Error())
 	}
 	return
 }
 
-func GenerateMongoTestContainer() (*mongo.Client, func(), error) {
+func generateMongoTestContainer() (*mongo.Client, func(), error) {
 	var db *mongo.Client
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -65,17 +65,17 @@ func GenerateMongoTestContainer() (*mongo.Client, func(), error) {
 	}); err != nil {
 		return nil, nil, err
 	}
-	return db, func() { DestroyMongoTestContainer(pool, resource) }, nil
+	return db, func() { destroyMongoTestContainer(pool, resource) }, nil
 }
 
-func DestroyMongoTestContainer(pool *dockertest.Pool, resource *dockertest.Resource) {
+func destroyMongoTestContainer(pool *dockertest.Pool, resource *dockertest.Resource) {
 	// When you're done, kill and remove the container
 	if err := pool.Purge(resource); err != nil {
 		server.Fatal(err.Error())
 	}
 }
 
-func ReGenerateDatabase(m *mongo.Client) error {
+func reGenerateDatabase(m *mongo.Client) error {
 	// Drop database
 	drops := []string{"users", "invites", "mutes", "sequence"}
 	for _, d := range drops {
@@ -85,10 +85,10 @@ func ReGenerateDatabase(m *mongo.Client) error {
 			return err
 		}
 	}
-	if err := InitAccountDatabase(m); err != nil {
+	if err := initAccountDatabase(m); err != nil {
 		return err
 	}
-	if err := InitMuteDatabase(m); err != nil {
+	if err := initMuteDatabase(m); err != nil {
 		return err
 	}
 	return nil

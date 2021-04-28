@@ -12,18 +12,18 @@ import (
 // middleware to set context
 func injectHeaderToContext(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user_id := r.Header.Get("x-consumer-user-id")
-		Debug("User id is: " + string(user_id))
-		user_permission := r.Header.Get("x-consumer-user-permission")
-		Debug("User permission is: " + string(user_permission))
-		ctx := context.WithValue(r.Context(), request.CtxUserId, user_id)
-		ctx = context.WithValue(ctx, request.CtxUserPermission, user_permission)
+		userID := r.Header.Get("x-consumer-user-id")
+		userPermission := r.Header.Get("x-consumer-user-permission")
+		Debug("User id is: " + string(userID))
+		Debug("User permission is: " + string(userPermission))
+		ctx := context.WithValue(r.Context(), request.CtxUserId, userID)
+		ctx = context.WithValue(ctx, request.CtxUserPermission, userPermission)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	}
 }
 
-// router creater for use middleware
+// NewRouterWithInject creates a new router with inject header middleware
 func NewRouterWithInject(routers ...gen.Router) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, api := range routers {

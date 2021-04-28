@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// MonngoMuteStruct - ミュート情報
 type MongoMuteStruct struct {
 	// MongoのユニークID
 	ID primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
@@ -22,6 +23,7 @@ type MongoMuteStruct struct {
 	TargetID int32 `bson:"targetID,omitempty" validate:"gte=0"`
 }
 
+// ToOpenApi converts this struct to openapi struct
 func (f *MongoMuteStruct) ToOpenApi() *gen.MuteStruct {
 	resp := gen.MuteStruct{
 		MuteID:     f.MuteID,

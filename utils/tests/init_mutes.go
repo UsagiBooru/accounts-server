@@ -8,7 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func InitMuteDatabase(m *mongo.Client) error {
+// initialize test data for mutes endpoints
+func initMuteDatabase(m *mongo.Client) error {
 	// Create mute
 	col := m.Database("accounts").Collection("mutes")
 	newMute := mongomodels.MongoMuteStruct{

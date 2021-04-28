@@ -14,6 +14,7 @@ type MongoInviteHelper struct {
 	col *mongo.Collection
 }
 
+// NewMongoInviteHelper creates a helper for handle account endpoints
 func NewMongoInviteHelper(md *mongo.Client) MongoInviteHelper {
 	return MongoInviteHelper{md.Database("accounts").Collection("invites")}
 }

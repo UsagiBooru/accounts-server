@@ -14,6 +14,7 @@ type MongoMuteHelper struct {
 	col *mongo.Collection
 }
 
+// NewMongoMuteHelper creates a helper for handle mutes endpoints
 func NewMongoMuteHelper(md *mongo.Client) MongoMuteHelper {
 	return MongoMuteHelper{md.Database("accounts").Collection("mutes")}
 }

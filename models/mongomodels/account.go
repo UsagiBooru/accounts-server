@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// アカウントID型(int32と互換)
 type AccountID int32
 
 // MongoAccountStructNotify - 通知クライアントを設定済みか
@@ -34,6 +35,7 @@ type MongoAccountStructInvite struct {
 	InvitedCount int32 `bson:"invitedCount,omitempty" validate:"omitempty,gte=0"`
 }
 
+// AccountStructAccess - 管理者権限とは別の細かな権限
 type MongoAccountStructAccess struct {
 
 	// 招待できるか
@@ -55,6 +57,7 @@ type MongoAccountStructAccess struct {
 	CanApprovePost bool `bson:"canApprovePost,omitempty"`
 }
 
+// AccountStructIpfs - IPFS設定
 type MongoAccountStructIpfs struct {
 
 	// 使用する任意のゲートウェイアドレス
@@ -73,6 +76,7 @@ type MongoAccountStructIpfs struct {
 	PinEnabled bool `bson:"pinEnabled,omitempty"`
 }
 
+// LightMongoAccountStruct - 簡易アカウント型(読み取り専用)
 type LightMongoAccountStruct struct {
 
 	// アカウントID
@@ -137,6 +141,7 @@ type MongoAccountStruct struct {
 	Ipfs MongoAccountStructIpfs `bson:"ipfs,omitempty"`
 }
 
+// UpdateDisplayID updates displayID of instance with validate conflict
 func (f *MongoAccountStruct) UpdateDisplayID(col *mongo.Collection, displayID string) (err error) {
 	if displayID == "" || f.DisplayID == displayID {
 		return nil
@@ -149,6 +154,7 @@ func (f *MongoAccountStruct) UpdateDisplayID(col *mongo.Collection, displayID st
 	return nil
 }
 
+// UpdateName updates name of instance with validate conflict
 func (f *MongoAccountStruct) UpdateName(col *mongo.Collection, name string) (err error) {
 	if name == "" || f.Name == name {
 		return nil
@@ -161,6 +167,7 @@ func (f *MongoAccountStruct) UpdateName(col *mongo.Collection, name string) (err
 	return nil
 }
 
+// UpdateDescription updates description if new description is not empty
 func (f *MongoAccountStruct) UpdateDescription(description string) {
 	if description == "" || f.Description == description {
 		return
@@ -168,6 +175,7 @@ func (f *MongoAccountStruct) UpdateDescription(description string) {
 	f.Description = description
 }
 
+// UpdateMail updates mail if new mail is not empty
 func (f *MongoAccountStruct) UpdateMail(mail string) {
 	if mail == "" {
 		return
@@ -175,6 +183,7 @@ func (f *MongoAccountStruct) UpdateMail(mail string) {
 	f.Mail = mail
 }
 
+// UpdateFavorite updates favorite if new favorite is not empty
 func (f *MongoAccountStruct) UpdateFavorite(favorite int32) {
 	if favorite == 0 {
 		return
@@ -182,6 +191,7 @@ func (f *MongoAccountStruct) UpdateFavorite(favorite int32) {
 	f.Favorite = favorite
 }
 
+// UpdateAccess updates access if new access is not empty
 func (f *MongoAccountStruct) UpdateAccess(access gen.AccountStructAccess) {
 	if (access == gen.AccountStructAccess{}) {
 		return
@@ -189,6 +199,7 @@ func (f *MongoAccountStruct) UpdateAccess(access gen.AccountStructAccess) {
 	f.Access = MongoAccountStructAccess(access)
 }
 
+// UpdateIpfs updates ipfs if new ipfs is not empty
 func (f *MongoAccountStruct) UpdateIpfs(ipfs gen.AccountStructIpfs) {
 	if (ipfs == gen.AccountStructIpfs{}) {
 		return
@@ -196,6 +207,7 @@ func (f *MongoAccountStruct) UpdateIpfs(ipfs gen.AccountStructIpfs) {
 	f.Ipfs = MongoAccountStructIpfs(ipfs)
 }
 
+// UpdateApiSeq increase ApiSeq if apiSeq is not empty
 func (f *MongoAccountStruct) UpdateApiSeq(update int32) {
 	if update == 0 {
 		return
@@ -203,6 +215,7 @@ func (f *MongoAccountStruct) UpdateApiSeq(update int32) {
 	f.ApiSeq += 1
 }
 
+// UpdatePemission updates permission if new permission is not empty
 func (f *MongoAccountStruct) UpdatePermission(permission int32) {
 	if f.Permission == permission {
 		return
@@ -210,6 +223,7 @@ func (f *MongoAccountStruct) UpdatePermission(permission int32) {
 	f.Permission = permission
 }
 
+// UpdatePassword updates password with validate password
 func (f *MongoAccountStruct) UpdatePassword(old_password string, new_password string) (err error) {
 	if new_password == "" {
 		return nil
@@ -230,6 +244,7 @@ func (f *MongoAccountStruct) UpdatePassword(old_password string, new_password st
 	return nil
 }
 
+// ValidatePassword validates specified password matches to this instance
 func (f *MongoAccountStruct) ValidatePassword(password string) (err error) {
 	// Validate old password hash
 	if err := bcrypt.CompareHashAndPassword([]byte(f.Password), []byte(password)); err != nil {
@@ -238,6 +253,7 @@ func (f *MongoAccountStruct) ValidatePassword(password string) (err error) {
 	return nil
 }
 
+// ToOpenApi converts this struct to openapi struct
 func (f *MongoAccountStruct) ToOpenApi(md *mongo.Client) (ac *gen.AccountStruct) {
 	col := md.Database("accounts").Collection("users")
 	filter := bson.M{"accountID": f.Inviter.AccountID}

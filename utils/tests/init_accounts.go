@@ -11,7 +11,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func InitAccountDatabase(m *mongo.Client) error {
+// initialize test data for accounts endpoints
+func initAccountDatabase(m *mongo.Client) error {
 	// Get password hash
 	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(PASSWORD),
