@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// ConfigList stores credentials
 type ConfigList struct {
 	MongoHost   string
 	MongoUser   string
@@ -16,6 +17,7 @@ type ConfigList struct {
 	JwtSecret   string
 }
 
+// GetConfig creates ConfigList from environment variables
 func GetConfig() ConfigList {
 	// Load ini
 	if envFilePath := os.Getenv("GO_ENV"); envFilePath != "" {

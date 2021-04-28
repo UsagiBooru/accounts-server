@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// MongoMuteHelper is helper struct requires *mongo.Collection
 type MongoMuteHelper struct {
 	col *mongo.Collection
 }
@@ -19,6 +20,7 @@ func NewMongoMuteHelper(md *mongo.Client) MongoMuteHelper {
 	return MongoMuteHelper{md.Database("accounts").Collection("mutes")}
 }
 
+// ToMongo converts specified openapi struct to mongo struct
 func (h *MongoMuteHelper) ToMongo(mt gen.MuteStruct) *MongoMuteStruct {
 	resp := MongoMuteStruct{
 		MuteID:     mt.MuteID,
@@ -29,6 +31,7 @@ func (h *MongoMuteHelper) ToMongo(mt gen.MuteStruct) *MongoMuteStruct {
 	return &resp
 }
 
+// CreateMute inserts specified mute to database
 func (h *MongoMuteHelper) CreateMute(muteID int32, targetType string, targetID int32) (*MongoMuteStruct, error) {
 	newMute := MongoMuteStruct{
 		ID:         primitive.NewObjectID(),
@@ -42,6 +45,7 @@ func (h *MongoMuteHelper) CreateMute(muteID int32, targetType string, targetID i
 	return &newMute, nil
 }
 
+// FindMute finds specified mute from database
 func (h *MongoMuteHelper) FindMute(muteID int32) (*MongoMuteStruct, error) {
 	filter := bson.M{
 		"muteID": muteID,
@@ -53,6 +57,7 @@ func (h *MongoMuteHelper) FindMute(muteID int32) (*MongoMuteStruct, error) {
 	return &Mute, nil
 }
 
+// FindDuplicatedMute finds specified duplicated mute from database
 func (h *MongoMuteHelper) FindDuplicatedMute(targetType string, targetID int32, accountID AccountID) error {
 	filter := bson.M{
 		"targetType": targetType,
@@ -66,6 +71,7 @@ func (h *MongoMuteHelper) FindDuplicatedMute(targetType string, targetID int32, 
 	return nil
 }
 
+// DeleteMute deletes specified mute from database
 func (h *MongoMuteHelper) DeleteMute(muteID int32) error {
 	filter := bson.M{
 		"muteID": muteID,

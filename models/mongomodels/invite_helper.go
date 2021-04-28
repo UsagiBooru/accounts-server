@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// MongoInviteHelper is helper struct requires *mongo.Collection
 type MongoInviteHelper struct {
 	col *mongo.Collection
 }
@@ -19,6 +20,7 @@ func NewMongoInviteHelper(md *mongo.Client) MongoInviteHelper {
 	return MongoInviteHelper{md.Database("accounts").Collection("invites")}
 }
 
+// CreateInvite inserts specified code to database
 func (h *MongoInviteHelper) CreateInvite(code string, inviter AccountID) error {
 	newInviteForNew := MongoInvite{
 		ID:      primitive.NewObjectID(),
@@ -32,6 +34,7 @@ func (h *MongoInviteHelper) CreateInvite(code string, inviter AccountID) error {
 	return nil
 }
 
+// FindInvite finds specified invite info from database
 func (h *MongoInviteHelper) FindInvite(code string) (*MongoInvite, error) {
 	filter := bson.M{
 		"code":    code,
@@ -44,6 +47,7 @@ func (h *MongoInviteHelper) FindInvite(code string) (*MongoInvite, error) {
 	return &invite, nil
 }
 
+// UseInvite set invitee to specified mongo invite data
 func (h *MongoInviteHelper) UseInvite(mongoInviteID primitive.ObjectID, consumer AccountID) error {
 	filter := bson.M{
 		"_id": mongoInviteID,

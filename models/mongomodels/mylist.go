@@ -14,11 +14,13 @@ import (
 	"time"
 )
 
+// MongoLightArtStruct - 簡易イラスト情報(読み取り専用)
 type MongoLightArtStruct struct {
 	// イラストID
 	ArtID int32 `json:"artID,omitempty" validate:"gte=0"`
 }
 
+// MongoMylistStruct - マイリスト情報
 type MongoMylistStruct struct {
 
 	// マイリストID
@@ -42,5 +44,6 @@ type MongoMylistStruct struct {
 	// イラストID一覧
 	Arts []MongoLightArtStruct `json:"arts,omitempty"`
 
+	// マイリスト所有者の簡易アカウント情報
 	Owner LightMongoAccountStruct `json:"owner,omitempty"`
 }

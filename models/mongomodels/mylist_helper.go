@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// MongoMylistHelper is helper struct requires *mongo.Collection
 type MongoMylistHelper struct {
 	col *mongo.Collection
 }
@@ -18,6 +19,7 @@ func NewMongoMylistHelper(md *mongo.Client) MongoMylistHelper {
 	return MongoMylistHelper{md.Database("accounts").Collection("mylists")}
 }
 
+// CreateMylist inserts specified mylist to database
 func (h *MongoMylistHelper) CreateMylist(MylistID int32, targetType string, targetID int32) (*MongoMylistStruct, error) {
 	newMylistForNew := MongoMylistStruct{
 		MylistID:    MylistID,
@@ -35,6 +37,7 @@ func (h *MongoMylistHelper) CreateMylist(MylistID int32, targetType string, targ
 	return &newMylistForNew, nil
 }
 
+// FindMylist finds specified mylist from database
 func (h *MongoMylistHelper) FindMylist(MylistID int32) (*MongoMylistStruct, error) {
 	filter := bson.M{
 		"MylistID": MylistID,
@@ -46,6 +49,7 @@ func (h *MongoMylistHelper) FindMylist(MylistID int32) (*MongoMylistStruct, erro
 	return &Mylist, nil
 }
 
+// FindMylistUsingFilter finds specified mylist from database
 func (h *MongoMylistHelper) FindMylistUsingFilter(filter bson.M) (*MongoMylistStruct, error) {
 	var Mylist MongoMylistStruct
 	if err := h.col.FindOne(context.Background(), filter).Decode(&Mylist); err != nil {
@@ -54,6 +58,7 @@ func (h *MongoMylistHelper) FindMylistUsingFilter(filter bson.M) (*MongoMylistSt
 	return &Mylist, nil
 }
 
+// DeleteMylist deletes specified mylist from database
 func (h *MongoMylistHelper) DeleteMylist(MylistID int32) error {
 	filter := bson.M{
 		"MylistID": MylistID,

@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// MongoAccountHelper is helper struct requires *mongo.Collection
 type MongoAccountHelper struct {
 	col *mongo.Collection
 }

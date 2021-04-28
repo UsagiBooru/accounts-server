@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// アカウントID型(int32と互換)
+// AccountID - アカウントID型(int32と互換)
 type AccountID int32
 
 // MongoAccountStructNotify - 通知クライアントを設定済みか
@@ -35,7 +35,7 @@ type MongoAccountStructInvite struct {
 	InvitedCount int32 `bson:"invitedCount,omitempty" validate:"omitempty,gte=0"`
 }
 
-// AccountStructAccess - 管理者権限とは別の細かな権限
+// MongoAccountStructAccess - 管理者権限とは別の細かな権限
 type MongoAccountStructAccess struct {
 
 	// 招待できるか
@@ -57,7 +57,7 @@ type MongoAccountStructAccess struct {
 	CanApprovePost bool `bson:"canApprovePost,omitempty"`
 }
 
-// AccountStructIpfs - IPFS設定
+// MongoAccountStructIpfs - IPFS設定
 type MongoAccountStructIpfs struct {
 
 	// 使用する任意のゲートウェイアドレス
@@ -215,7 +215,7 @@ func (f *MongoAccountStruct) UpdateApiSeq(update int32) {
 	f.ApiSeq += 1
 }
 
-// UpdatePemission updates permission if new permission is not empty
+// UpdatePermission updates permission if new permission is not empty
 func (f *MongoAccountStruct) UpdatePermission(permission int32) {
 	if f.Permission == permission {
 		return
@@ -224,17 +224,17 @@ func (f *MongoAccountStruct) UpdatePermission(permission int32) {
 }
 
 // UpdatePassword updates password with validate password
-func (f *MongoAccountStruct) UpdatePassword(old_password string, new_password string) (err error) {
-	if new_password == "" {
+func (f *MongoAccountStruct) UpdatePassword(oldPassword string, newPassword string) (err error) {
+	if newPassword == "" {
 		return nil
 	}
 	// Validate old password hash
-	if err := bcrypt.CompareHashAndPassword([]byte(f.Password), []byte(old_password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(f.Password), []byte(oldPassword)); err != nil {
 		return errors.New("specified old password is incorrect")
 	}
 	// Get new password hash
 	hashedNewPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(new_password),
+		[]byte(newPassword),
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
