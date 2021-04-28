@@ -208,10 +208,10 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	// Update using input
 	col := s.md.Database("accounts").Collection("users")
 	if err := accountCurrent.UpdateDisplayID(col, accountChange.DisplayID); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewConflictedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdateName(col, accountChange.Name); err != nil {
-		return response.NewLockedErrorWithMessage(err.Error()), nil
+		return response.NewConflictedErrorWithMessage(err.Error()), nil
 	}
 	if err := accountCurrent.UpdatePassword(accountChange.OldPassword, accountChange.Password); err != nil {
 		return response.NewRequestErrorWithMessage(err.Error()), nil
