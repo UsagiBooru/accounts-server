@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
+	"github.com/UsagiBooru/accounts-server/models/constmodels"
 	"github.com/UsagiBooru/accounts-server/models/mongomodels"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,11 +28,11 @@ func initAccountDatabase(m *mongo.Client) error {
 		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
-			AccountStatus: account_const.STATUS_ACTIVE,
+			AccountStatus: constmodels.STATUS_ACTIVE,
 			AccountID:     1,
 			DisplayID:     "domao",
 			ApiSeq:        0,
-			Permission:    account_const.PERMISSION_ADMIN,
+			Permission:    constmodels.PERMISSION_ADMIN,
 			Password:      string(hashedPassword),
 			Mail:          "debug@example.com",
 			TotpEnabled:   false,
@@ -70,11 +70,11 @@ func initAccountDatabase(m *mongo.Client) error {
 		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
-			AccountStatus: account_const.STATUS_ACTIVE,
+			AccountStatus: constmodels.STATUS_ACTIVE,
 			AccountID:     2,
 			DisplayID:     "kafuuchino",
 			ApiSeq:        0,
-			Permission:    account_const.PERMISSION_MOD,
+			Permission:    constmodels.PERMISSION_MOD,
 			Password:      string(hashedPassword),
 			Mail:          "debug2@example.com",
 			TotpEnabled:   false,
@@ -112,11 +112,11 @@ func initAccountDatabase(m *mongo.Client) error {
 		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
-			AccountStatus: account_const.STATUS_ACTIVE,
+			AccountStatus: constmodels.STATUS_ACTIVE,
 			AccountID:     3,
 			DisplayID:     "hotococoa",
 			ApiSeq:        0,
-			Permission:    account_const.PERMISSION_USER,
+			Permission:    constmodels.PERMISSION_USER,
 			Password:      string(hashedPassword),
 			Mail:          "debug3@example.com",
 			TotpEnabled:   false,
@@ -154,11 +154,11 @@ func initAccountDatabase(m *mongo.Client) error {
 		mongomodels.MongoAccountStruct{
 			ID:            primitive.NewObjectID(),
 			TotpCode:      "Hogehoge",
-			AccountStatus: account_const.STATUS_DELETED_BY_MOD,
+			AccountStatus: constmodels.STATUS_DELETED_BY_MOD,
 			AccountID:     4,
 			DisplayID:     "deleted",
 			ApiSeq:        0,
-			Permission:    account_const.PERMISSION_USER,
+			Permission:    constmodels.PERMISSION_USER,
 			Password:      string(hashedPassword),
 			Mail:          "debug4@example.com",
 			TotpEnabled:   false,

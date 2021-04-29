@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/UsagiBooru/accounts-server/gen"
-	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
+	"github.com/UsagiBooru/accounts-server/models/constmodels"
 	"github.com/UsagiBooru/accounts-server/models/mongomodels"
 	"github.com/UsagiBooru/accounts-server/utils/request"
 	"github.com/UsagiBooru/accounts-server/utils/response"
@@ -50,8 +50,8 @@ func (s *AccountsApiImplService) GetAccount(ctx context.Context, accountID int32
 	}
 	// Read permission for block getting deleted account
 	issuerPermission, _ := request.GetUserPermission(ctx)
-	if issuerPermission == account_const.PERMISSION_USER &&
-		account.AccountStatus != account_const.STATUS_ACTIVE {
+	if issuerPermission == constmodels.PERMISSION_USER &&
+		account.AccountStatus != constmodels.STATUS_ACTIVE {
 		return response.NewNotFoundError(), nil
 	}
 	return gen.Response(200, account.ToOpenApi(s.md)), nil
@@ -174,8 +174,8 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 		return response.NewNotFoundError(), nil
 	}
 	/* Validate Permission */
-	notAdmin := issuerPermission != account_const.PERMISSION_ADMIN
-	notMod := issuerPermission < account_const.PERMISSION_MOD
+	notAdmin := issuerPermission != constmodels.PERMISSION_ADMIN
+	notMod := issuerPermission < constmodels.PERMISSION_MOD
 	notSelf := accountID != issuerID
 	notSelfOrAdmin := notAdmin && notSelf
 	// Deny changing invite / inviter / notify
@@ -191,10 +191,10 @@ func (s *AccountsApiImplService) EditAccount(ctx context.Context, accountID int3
 	// Deny changing if target permission is greater than moderator except target is ownself
 	// Deny changing permission if not admin
 	// Deny changing access if not greater than moderator
-	if (issuerPermission == account_const.PERMISSION_MOD &&
-		accountCurrent.Permission >= account_const.PERMISSION_MOD &&
+	if (issuerPermission == constmodels.PERMISSION_MOD &&
+		accountCurrent.Permission >= constmodels.PERMISSION_MOD &&
 		notSelf) ||
-		(accountChange.Permission != accountCurrent.Permission && accountChange.Permission != account_const.PERMISSION_USER && notAdmin) ||
+		(accountChange.Permission != accountCurrent.Permission && accountChange.Permission != constmodels.PERMISSION_USER && notAdmin) ||
 		((accountChange.Access != gen.AccountStructAccess{}) && notMod) {
 		return response.NewPermissionError(), nil
 	}
@@ -244,7 +244,7 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 		return response.NewNotFoundError(), nil
 	}
 	// Validate permission
-	notMod := issuerPermission < account_const.PERMISSION_MOD
+	notMod := issuerPermission < constmodels.PERMISSION_MOD
 	if accountID != issuerID && notMod {
 		return response.NewPermissionError(), nil
 	}
@@ -255,10 +255,10 @@ func (s *AccountsApiImplService) DeleteAccount(ctx context.Context, accountID in
 		}
 	}
 	// Update account
-	if issuerPermission == account_const.PERMISSION_USER {
-		account.AccountStatus = account_const.STATUS_DELETED_BY_SELF
+	if issuerPermission == constmodels.PERMISSION_USER {
+		account.AccountStatus = constmodels.STATUS_DELETED_BY_SELF
 	} else {
-		account.AccountStatus = account_const.STATUS_DELETED_BY_MOD
+		account.AccountStatus = constmodels.STATUS_DELETED_BY_MOD
 	}
 	if err := s.ah.UpdateAccount(mongomodels.AccountID(accountID), *account); err != nil {
 		return response.NewInternalError(), err
@@ -281,7 +281,7 @@ func (s *AccountsApiImplService) LoginWithForm(ctx context.Context, req gen.Post
 		return response.NewUnauthorizedError(), nil
 	}
 	// Deny if account deleted
-	if account.AccountStatus != account_const.STATUS_ACTIVE {
+	if account.AccountStatus != constmodels.STATUS_ACTIVE {
 		return response.NewLockedErrorWithMessage("the account was deleted"), nil
 	}
 	// Generate jwt token

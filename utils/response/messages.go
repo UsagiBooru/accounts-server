@@ -7,19 +7,19 @@ import (
 )
 
 const (
-	// Default response message for 400 BadRequest error
+	// MessageRequestError is default response message for 400 BadRequest error
 	MessageRequestError = "Your request is not valid."
-	// Default response message for 423 Locked error
+	// MessageLockedError is default response message for 423 Locked error
 	MessageLockedError = "Specified content is locked and not editable."
-	// Default response message for 404 NotFound error
+	// MessageNotFoundError is default response message for 404 NotFound error
 	MessageNotFoundError = "Specified content was not exist."
-	// Default response message for 401 Unauthorized error
+	// MessageUnauthorizedError is default response message for 401 Unauthorized error
 	MessageUnauthorizedError = "Probably your password incorrect."
-	// Default response message for 409 Conflict error
+	// MessageConflictedError is default response message for 409 Conflict error
 	MessageConflictedError = "Specified content was already exists."
-	// Default response message for 403 Forbidden error
+	// MessagePermissionError is default response message for 403 Forbidden error
 	MessagePermissionError = "You don't have enough permission to do it."
-	// Default response message for 500 Internal error
+	// MessageInternalError is default response message for 500 Internal error
 	MessageInternalError = "Unfortunately, the server exploded."
 )
 

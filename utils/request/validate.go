@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
+	"github.com/UsagiBooru/accounts-server/models/constmodels"
 )
 
 // ValidateRequiredFields validates required fields are not empty
@@ -27,7 +27,7 @@ func ValidateRequiredFields(req interface{}, fields []string) error {
 
 // ValidatePermission validates issuer account can change specified account
 func ValidatePermission(issuerPermission int32, issuerID int32, targetID int32) error {
-	notMod := issuerPermission < account_const.PERMISSION_MOD
+	notMod := issuerPermission < constmodels.PERMISSION_MOD
 	if targetID != issuerID && notMod {
 		return errors.New("not enough permissions")
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/UsagiBooru/accounts-server/gen"
-	"github.com/UsagiBooru/accounts-server/models/const_models/account_const"
+	"github.com/UsagiBooru/accounts-server/models/constmodels"
 	"github.com/UsagiBooru/accounts-server/utils/tests"
 )
 
@@ -300,7 +300,7 @@ func TestEditAccountForbiddenOnModChangeOwnPermission(t *testing.T) {
 	defer s.Close()
 	defer shutdown()
 	editAccount := gen.AccountStruct{
-		Permission: account_const.PERMISSION_ADMIN,
+		Permission: constmodels.PERMISSION_ADMIN,
 	}
 	req_json, _ := json.Marshal(editAccount)
 	req := httptest.NewRequest(
