@@ -1,0 +1,18 @@
+version = 1
+
+test_patterns = ["impl/*_test.go"]
+
+exclude_patterns = [
+    ".circleci/*",
+    ".openapi-generator/*",
+    ".vscode/*",
+    "api/*",
+    ".gen/*"
+]
+
+[[analyzers]]
+name = "go"
+enabled = true
+
+  [analyzers.meta]
+  import_root = "github.com/UsagiBooru/accounts-server"
