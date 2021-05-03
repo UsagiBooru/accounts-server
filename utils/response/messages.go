@@ -80,7 +80,7 @@ func NewUnauthorizedError() gen.ImplResponse {
 }
 
 // NewUnauthorizedErrorWithMessage creates 401 Unauthorized response with using message
-func NewUnauhorizedErrorWithMessage(message string) gen.ImplResponse {
+func NewUnauthorizedErrorWithMessage(message string) gen.ImplResponse {
 	return gen.ImplResponse{
 		Code: http.StatusUnauthorized,
 		Body: gen.GeneralMessageResponse{Message: message},

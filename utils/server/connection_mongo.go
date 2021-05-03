@@ -10,7 +10,7 @@ import (
 
 // NewMongoDBClient creates a new mongodb client
 func NewMongoDBClient(host, user, pass string) *mongo.Client {
-	// Initalize MongoDB driver
+	// Initialize MongoDB driver
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(
