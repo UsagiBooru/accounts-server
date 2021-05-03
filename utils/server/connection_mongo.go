@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,7 +19,6 @@ func NewMongoDBClient(host, user, pass string) *mongo.Client {
 	)
 	if err != nil {
 		Error("Connect to mongodb failed: " + err.Error())
-		os.Exit(1)
 	}
 	// Debug("MongoDB client created.")
 	return client

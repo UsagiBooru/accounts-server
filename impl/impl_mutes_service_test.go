@@ -3,7 +3,6 @@ package impl_test
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -51,10 +50,7 @@ func TestCreateMuteSuccess(t *testing.T) {
 		TargetType: "artist",
 		TargetID:   2,
 	}
-	user_json, err := json.Marshal(newMute)
-	if err != nil {
-		log.Fatal("Convert struct to json failed.")
-	}
+	user_json, _ := json.Marshal(newMute)
 	req := httptest.NewRequest(
 		http.MethodPost,
 		"/accounts/1/mutes",
