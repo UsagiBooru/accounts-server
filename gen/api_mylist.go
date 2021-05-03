@@ -25,12 +25,12 @@ type MylistApiController struct {
 
 // NewMylistApiController creates a default api controller
 func NewMylistApiController(s MylistApiServicer) Router {
-	return &MylistApiController{ service: s }
+	return &MylistApiController{service: s}
 }
 
 // Routes returns all of the api route for the MylistApiController
 func (c *MylistApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"CreateMylist",
 			strings.ToUpper("Post"),
@@ -47,47 +47,47 @@ func (c *MylistApiController) Routes() Routes {
 }
 
 // CreateMylist - Create user mylist
-func (c *MylistApiController) CreateMylist(w http.ResponseWriter, r *http.Request) { 
+func (c *MylistApiController) CreateMylist(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	mylistStruct := &MylistStruct{}
 	if err := json.NewDecoder(r.Body).Decode(&mylistStruct); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.CreateMylist(r.Context(), accountID, *mylistStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // GetUserMylists - Get user mylists
-func (c *MylistApiController) GetUserMylists(w http.ResponseWriter, r *http.Request) { 
+func (c *MylistApiController) GetUserMylists(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.GetUserMylists(r.Context(), accountID)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }

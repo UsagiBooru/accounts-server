@@ -12,12 +12,12 @@ package gen
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 // NotifyApiService is a service that implents the logic for the NotifyApiServicer
-// This service should implement the business logic for every endpoint for the NotifyApi API. 
+// This service should implement the business logic for every endpoint for the NotifyApi API.
 // Include any external packages or services that will be required by this service.
 type NotifyApiService struct {
 }
@@ -213,4 +213,3 @@ func (s *NotifyApiService) RegisterNotifyCondition(ctx context.Context, accountI
 
 	return Response(http.StatusNotImplemented, nil), errors.New("RegisterNotifyCondition method not implemented")
 }
-

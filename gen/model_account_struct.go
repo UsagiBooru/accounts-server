@@ -12,7 +12,6 @@ package gen
 
 // AccountStruct - アカウントの取得/編集に使う構造体
 type AccountStruct struct {
-
 	Access AccountStructAccess `json:"access,omitempty"`
 
 	// ユーザーID

@@ -12,7 +12,6 @@ package gen
 
 // LightArtistStruct - 絵師情報の簡易構造体(読み取り専用)
 type LightArtistStruct struct {
-
 	ArtistID int32 `json:"artistID,omitempty"`
 
 	Name string `json:"name,omitempty"`

@@ -91,7 +91,7 @@ func (c *AccountsApiController) CreateAccount(w http.ResponseWriter, r *http.Req
 	}
 
 	result, err := c.service.CreateAccount(r.Context(), *accountStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
@@ -112,7 +112,7 @@ func (c *AccountsApiController) DeleteAccount(w http.ResponseWriter, r *http.Req
 
 	password := r.Header.Get("password")
 	result, err := c.service.DeleteAccount(r.Context(), accountID, password)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
@@ -138,7 +138,7 @@ func (c *AccountsApiController) EditAccount(w http.ResponseWriter, r *http.Reque
 	}
 
 	result, err := c.service.EditAccount(r.Context(), accountID, *accountStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
@@ -158,7 +158,7 @@ func (c *AccountsApiController) GetAccount(w http.ResponseWriter, r *http.Reques
 	}
 
 	result, err := c.service.GetAccount(r.Context(), accountID)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
@@ -171,7 +171,7 @@ func (c *AccountsApiController) GetAccount(w http.ResponseWriter, r *http.Reques
 // GetAccountMe - Get user info (self)
 func (c *AccountsApiController) GetAccountMe(w http.ResponseWriter, r *http.Request) {
 	result, err := c.service.GetAccountMe(r.Context())
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
@@ -206,7 +206,7 @@ func (c *AccountsApiController) GetUploadHistory(w http.ResponseWriter, r *http.
 	}
 
 	result, err := c.service.GetUploadHistory(r.Context(), accountID, page, sort, order, perPage)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
@@ -225,7 +225,7 @@ func (c *AccountsApiController) LoginWithForm(w http.ResponseWriter, r *http.Req
 	}
 
 	result, err := c.service.LoginWithForm(r.Context(), *postLoginWithFormRequest)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
@@ -244,7 +244,7 @@ func (c *AccountsApiController) ReissuePassword(w http.ResponseWriter, r *http.R
 	}
 
 	result, err := c.service.ReissuePassword(r.Context(), *postResetPasswordRequest)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return

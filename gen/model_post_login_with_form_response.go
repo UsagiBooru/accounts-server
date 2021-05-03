@@ -12,6 +12,5 @@ package gen
 
 // PostLoginWithFormResponse - ログインに成功した際に利用される応答構造体
 type PostLoginWithFormResponse struct {
-
 	ApiKey string `json:"apiKey,omitempty"`
 }

@@ -25,12 +25,12 @@ type NotifyApiController struct {
 
 // NewNotifyApiController creates a default api controller
 func NewNotifyApiController(s NotifyApiServicer) Router {
-	return &NotifyApiController{ service: s }
+	return &NotifyApiController{service: s}
 }
 
 // Routes returns all of the api route for the NotifyApiController
 func (c *NotifyApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"AddLineNotifyClient",
 			strings.ToUpper("Post"),
@@ -101,247 +101,247 @@ func (c *NotifyApiController) Routes() Routes {
 }
 
 // AddLineNotifyClient - Create line notify client
-func (c *NotifyApiController) AddLineNotifyClient(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) AddLineNotifyClient(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	postRegisterLineNotifyRequest := &PostRegisterLineNotifyRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&postRegisterLineNotifyRequest); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.AddLineNotifyClient(r.Context(), accountID, *postRegisterLineNotifyRequest)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // AddWebNotifyClient - Create webpush notify client
-func (c *NotifyApiController) AddWebNotifyClient(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) AddWebNotifyClient(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	postRegisterWebPushRequest := &PostRegisterWebPushRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&postRegisterWebPushRequest); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.AddWebNotifyClient(r.Context(), accountID, *postRegisterWebPushRequest)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // DeleteNotifyClient - Delete notify client
-func (c *NotifyApiController) DeleteNotifyClient(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) DeleteNotifyClient(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	notifyClientID, err := parseInt32Parameter(params["notifyClientID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.DeleteNotifyClient(r.Context(), accountID, notifyClientID)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // DeleteNotifyCondition - Delete notify condition
-func (c *NotifyApiController) DeleteNotifyCondition(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) DeleteNotifyCondition(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conditionID, err := parseInt32Parameter(params["conditionID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.DeleteNotifyCondition(r.Context(), conditionID, accountID)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // EditNotifyClient - Edit notify client
-func (c *NotifyApiController) EditNotifyClient(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) EditNotifyClient(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	notifyClientID, err := parseInt32Parameter(params["notifyClientID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	notifyClientStruct := &NotifyClientStruct{}
 	if err := json.NewDecoder(r.Body).Decode(&notifyClientStruct); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.EditNotifyClient(r.Context(), accountID, notifyClientID, *notifyClientStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // EditNotifyCondition - Edit notify condition
-func (c *NotifyApiController) EditNotifyCondition(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) EditNotifyCondition(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conditionID, err := parseInt32Parameter(params["conditionID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	notifyConditionStruct := &NotifyConditionStruct{}
 	if err := json.NewDecoder(r.Body).Decode(&notifyConditionStruct); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.EditNotifyCondition(r.Context(), conditionID, accountID, *notifyConditionStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // GetNotifyClient - Get notify client
-func (c *NotifyApiController) GetNotifyClient(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) GetNotifyClient(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	notifyClientID, err := parseInt32Parameter(params["notifyClientID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.GetNotifyClient(r.Context(), accountID, notifyClientID)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // GetNotifyClients - Get notify clients
-func (c *NotifyApiController) GetNotifyClients(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) GetNotifyClients(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.GetNotifyClients(r.Context(), accountID)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // GetNotifyCondition - Get notify condition
-func (c *NotifyApiController) GetNotifyCondition(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) GetNotifyCondition(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conditionID, err := parseInt32Parameter(params["conditionID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.GetNotifyCondition(r.Context(), conditionID, accountID)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // GetNotifyConditions - Get notify conditions
-func (c *NotifyApiController) GetNotifyConditions(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) GetNotifyConditions(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	query := r.URL.Query()
 	accountID, err := parseInt32Parameter(params["accountID"])
@@ -349,41 +349,41 @@ func (c *NotifyApiController) GetNotifyConditions(w http.ResponseWriter, r *http
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	type_ := query.Get("type")
 	result, err := c.service.GetNotifyConditions(r.Context(), accountID, type_)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // RegisterNotifyCondition - Register notify condition
-func (c *NotifyApiController) RegisterNotifyCondition(w http.ResponseWriter, r *http.Request) { 
+func (c *NotifyApiController) RegisterNotifyCondition(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	notifyConditionStruct := &NotifyConditionStruct{}
 	if err := json.NewDecoder(r.Body).Decode(&notifyConditionStruct); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.RegisterNotifyCondition(r.Context(), accountID, *notifyConditionStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }

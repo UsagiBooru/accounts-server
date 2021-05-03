@@ -12,12 +12,12 @@ package gen
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 // MutesApiService is a service that implents the logic for the MutesApiServicer
-// This service should implement the business logic for every endpoint for the MutesApi API. 
+// This service should implement the business logic for every endpoint for the MutesApi API.
 // Include any external packages or services that will be required by this service.
 type MutesApiService struct {
 }
@@ -97,4 +97,3 @@ func (s *MutesApiService) GetMutes(ctx context.Context, accountID int32) (ImplRe
 
 	return Response(http.StatusNotImplemented, nil), errors.New("GetMutes method not implemented")
 }
-

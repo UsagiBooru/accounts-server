@@ -12,7 +12,6 @@ package gen
 
 // GetNotifyConditionsResponse - 通知条件情報一覧の応答構造体
 type GetNotifyConditionsResponse struct {
-
 	Conditions []NotifyConditionStruct `json:"conditions,omitempty"`
 
 	Pagination PaginationStruct `json:"pagination,omitempty"`

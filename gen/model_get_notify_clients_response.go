@@ -12,6 +12,5 @@ package gen
 
 // GetNotifyClientsResponse - 通知クライアント情報一覧の応答構造体
 type GetNotifyClientsResponse struct {
-
 	Clients []NotifyClientStruct `json:"clients,omitempty"`
 }

@@ -25,12 +25,12 @@ type TimelineApiController struct {
 
 // NewTimelineApiController creates a default api controller
 func NewTimelineApiController(s TimelineApiServicer) Router {
-	return &TimelineApiController{ service: s }
+	return &TimelineApiController{service: s}
 }
 
 // Routes returns all of the api route for the TimelineApiController
 func (c *TimelineApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"FollowArtist",
 			strings.ToUpper("Post"),
@@ -53,33 +53,33 @@ func (c *TimelineApiController) Routes() Routes {
 }
 
 // FollowArtist - Follow artist
-func (c *TimelineApiController) FollowArtist(w http.ResponseWriter, r *http.Request) { 
+func (c *TimelineApiController) FollowArtist(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	lightArtistStruct := &LightArtistStruct{}
 	if err := json.NewDecoder(r.Body).Decode(&lightArtistStruct); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.FollowArtist(r.Context(), accountID, *lightArtistStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // GetFollowingArtists - Get timeline followings
-func (c *TimelineApiController) GetFollowingArtists(w http.ResponseWriter, r *http.Request) { 
+func (c *TimelineApiController) GetFollowingArtists(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	query := r.URL.Query()
 	accountID, err := parseInt32Parameter(params["accountID"])
@@ -87,7 +87,7 @@ func (c *TimelineApiController) GetFollowingArtists(w http.ResponseWriter, r *ht
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	sort := query.Get("sort")
 	order := query.Get("order")
 	page, err := parseInt32Parameter(query.Get("page"))
@@ -95,40 +95,40 @@ func (c *TimelineApiController) GetFollowingArtists(w http.ResponseWriter, r *ht
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.GetFollowingArtists(r.Context(), accountID, sort, order, page)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }
 
 // UnfollowArtist - Unfollow artist
-func (c *TimelineApiController) UnfollowArtist(w http.ResponseWriter, r *http.Request) { 
+func (c *TimelineApiController) UnfollowArtist(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	accountID, err := parseInt32Parameter(params["accountID"])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	lightArtistStruct := &LightArtistStruct{}
 	if err := json.NewDecoder(r.Body).Decode(&lightArtistStruct); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	result, err := c.service.UnfollowArtist(r.Context(), accountID, *lightArtistStruct)
-	//If an error occured, encode the error with the status code
+	//If an error occurred, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)
 		return
 	}
 	//If no error, encode the body and the result code
 	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+
 }

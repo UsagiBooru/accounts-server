@@ -12,7 +12,6 @@ package gen
 
 // AccountStructNotify - 通知クライアントを設定済みか
 type AccountStructNotify struct {
-
 	HasLineNotify bool `json:"hasLineNotify,omitempty"`
 
 	HasWebNotify bool `json:"hasWebNotify,omitempty"`

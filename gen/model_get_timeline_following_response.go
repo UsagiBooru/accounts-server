@@ -12,7 +12,6 @@ package gen
 
 // GetTimelineFollowingResponse - タイムラインのフォロー一覧の応答構造体
 type GetTimelineFollowingResponse struct {
-
 	Follows []LightArtistStruct `json:"follows,omitempty"`
 
 	Pagination PaginationStruct `json:"pagination,omitempty"`

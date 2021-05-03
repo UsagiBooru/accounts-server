@@ -12,7 +12,6 @@ package gen
 
 // GetMylistListResponse - マイリスト情報一覧の応答構造体
 type GetMylistListResponse struct {
-
 	Contents []MylistStruct `json:"contents"`
 
 	Pagination PaginationStruct `json:"pagination"`

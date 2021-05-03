@@ -12,12 +12,12 @@ package gen
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 // TimelineApiService is a service that implents the logic for the TimelineApiServicer
-// This service should implement the business logic for every endpoint for the TimelineApi API. 
+// This service should implement the business logic for every endpoint for the TimelineApi API.
 // Include any external packages or services that will be required by this service.
 type TimelineApiService struct {
 }
@@ -71,4 +71,3 @@ func (s *TimelineApiService) UnfollowArtist(ctx context.Context, accountID int32
 
 	return Response(http.StatusNotImplemented, nil), errors.New("UnfollowArtist method not implemented")
 }
-

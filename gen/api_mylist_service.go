@@ -12,12 +12,12 @@ package gen
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 // MylistApiService is a service that implents the logic for the MylistApiServicer
-// This service should implement the business logic for every endpoint for the MylistApi API. 
+// This service should implement the business logic for every endpoint for the MylistApi API.
 // Include any external packages or services that will be required by this service.
 type MylistApiService struct {
 }
@@ -66,4 +66,3 @@ func (s *MylistApiService) GetUserMylists(ctx context.Context, accountID int32) 
 
 	return Response(http.StatusNotImplemented, nil), errors.New("GetUserMylists method not implemented")
 }
-

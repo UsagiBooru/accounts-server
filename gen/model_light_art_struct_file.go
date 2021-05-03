@@ -11,6 +11,5 @@
 package gen
 
 type LightArtStructFile struct {
-
 	IpfsHash LightArtStructFileIpfsHash `json:"ipfsHash,omitempty"`
 }

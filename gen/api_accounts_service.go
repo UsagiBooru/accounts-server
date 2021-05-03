@@ -12,12 +12,12 @@ package gen
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 // AccountsApiService is a service that implents the logic for the AccountsApiServicer
-// This service should implement the business logic for every endpoint for the AccountsApi API. 
+// This service should implement the business logic for every endpoint for the AccountsApi API.
 // Include any external packages or services that will be required by this service.
 type AccountsApiService struct {
 }
@@ -144,4 +144,3 @@ func (s *AccountsApiService) ReissuePassword(ctx context.Context, postResetPassw
 
 	return Response(http.StatusNotImplemented, nil), errors.New("ReissuePassword method not implemented")
 }
-
