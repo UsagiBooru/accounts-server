@@ -11,7 +11,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/UsagiBooru/accounts-server/gen"
@@ -20,7 +19,6 @@ import (
 )
 
 func main() {
-	server.Info("Server started")
 	conf := server.GetConfig()
 	md := server.NewMongoDBClient(conf.MongoHost, conf.MongoUser, conf.MongoPass)
 
@@ -40,6 +38,6 @@ func main() {
 	TimelineApiController := gen.NewTimelineApiController(TimelineApiService)
 
 	router := server.NewRouterWithInject(AccountsApiController, MutesApiController, MylistApiController, NotifyApiController, TimelineApiController)
-
-	log.Fatal(http.ListenAndServe(":8000", router))
+	server.Info("Server started")
+	http.ListenAndServe(":8000", router)
 }
