@@ -4,10 +4,10 @@ info:
     email: dsgamer777@gmail.com
     name: Omado
     url: https://twitter.com/shallow_omado
-  description: アカウント関連API
+  description: Accounts related api (required)
   license:
-    name: GPLv3
-    url: https://www.gnu.org/licenses/gpl-3.0.ja.html
+    name: AGPLv3
+    url: https://www.gnu.org/licenses/agpl-3.0.ja.html
   title: UsagiBooru Accounts API
   version: "2.0"
 servers:
@@ -20,11 +20,11 @@ servers:
 security:
 - Authorization: []
 tags:
-- name: accounts
-- name: mutes
 - name: mylist
 - name: notify
 - name: timeline
+- name: accounts
+- name: mutes
 paths:
   /accounts:
     post:
@@ -50,6 +50,73 @@ paths:
           description: Bad Request
       security: []
       summary: Create account
+      tags:
+      - accounts
+  /accounts/login/form:
+    post:
+      description: IDとパスワードを用いてユーザー認証し、APIトークンを発行します
+      operationId: loginWithForm
+      requestBody:
+        content:
+          application/json:
+            examples:
+              admin:
+                value:
+                  id: test_admin
+                  password: this_is_only_for_test
+              user:
+                value:
+                  id: test_user
+                  password: this_is_only_for_test
+            schema:
+              $ref: '#/components/schemas/PostLoginWithFormRequest'
+        description: ユーザーIDとパスワードをパラメータに取ります
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostLoginWithFormResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Bad Request
+      security: []
+      summary: Login with form
+      tags:
+      - accounts
+  /accounts/login/reset_password:
+    post:
+      description: 指定されたメールアドレスにパスワード再発行メールを送信します
+      operationId: reissuePassword
+      requestBody:
+        content:
+          application/json:
+            examples:
+              admin:
+                value:
+                  mail: dsgamer777@gmail.com
+            schema:
+              $ref: '#/components/schemas/PostResetPasswordRequest'
+        description: メールアドレスをリクエストに取ります
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Bad Request
+      security: []
+      summary: Reset password
       tags:
       - accounts
   /accounts/me:
@@ -163,13 +230,13 @@ paths:
               example:
                 value:
                   userDisplayID: omado
-                  userName: お窓
-                  userPassword: kafuuch1n0
-                  userOldPassword: h0t0c0c0a
                   userFavorite: 1
-                  userTheme: 0
-                  userPermission: 0
                   userLineID: dosugamea
+                  userName: お窓
+                  userOldPassword: h0t0c0c0a
+                  userPassword: kafuuch1n0
+                  userPermission: 0
+                  userTheme: 0
                   userTwitterID: shallow_omado
             schema:
               $ref: '#/components/schemas/AccountStruct'
@@ -206,824 +273,6 @@ paths:
       summary: Edit account info
       tags:
       - accounts
-  /accounts/{accountID}/upload_history:
-    get:
-      description: イラスト投稿履歴を取得します
-      operationId: getUploadHistory
-      parameters:
-      - description: 取得したいユーザーのアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 'ページ番号 (NOTE: 1ページ辺りの応答は20件)'
-        explode: true
-        in: query
-        name: page
-        required: false
-        schema:
-          minimum: 1
-          type: integer
-        style: form
-      - description: ソート方法 d:最終更新
-        explode: true
-        in: query
-        name: sort
-        required: false
-        schema:
-          enum:
-          - d
-          example: d
-          maxLength: 1
-          minLength: 1
-          type: string
-        style: form
-      - description: ソート方向 d:降順(大→小) a:昇順(小→大)
-        explode: true
-        in: query
-        name: order
-        required: false
-        schema:
-          default: d
-          enum:
-          - d
-          - a
-          example: d
-          maxLength: 1
-          minLength: 1
-          type: string
-        style: form
-      - description: 1ページ辺りの要素数
-        explode: true
-        in: query
-        name: per_page
-        required: false
-        schema:
-          default: 20
-          enum:
-          - 20
-          - 40
-          - 60
-          - 80
-          - 100
-          example: 20
-          maximum: 100
-          minimum: 20
-          type: integer
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetUploadHistoryResponse'
-          description: OK
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Get upload history
-      tags:
-      - accounts
-  /accounts/login/form:
-    post:
-      description: IDとパスワードを用いてユーザー認証し、APIトークンを発行します
-      operationId: loginWithForm
-      requestBody:
-        content:
-          application/json:
-            examples:
-              user:
-                value:
-                  id: test_user
-                  password: this_is_only_for_test
-              admin:
-                value:
-                  id: test_admin
-                  password: this_is_only_for_test
-            schema:
-              $ref: '#/components/schemas/PostLoginWithFormRequest'
-        description: ユーザーIDとパスワードをパラメータに取ります
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PostLoginWithFormResponse'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Bad Request
-      security: []
-      summary: Login with form
-      tags:
-      - accounts
-  /accounts/{accountID}/notify/clients:
-    get:
-      description: 現在のユーザーが設定済みの通知クライアント一覧を取得します
-      operationId: getNotifyClients
-      parameters:
-      - description: 取得対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetNotifyClientsResponse'
-          description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Get notify clients
-      tags:
-      - notify
-  /accounts/{accountID}/notify/clients/web:
-    post:
-      description: |-
-        クライアント側で作成したパブリック/プライベートVAPIDキーを
-        userID、クライアント名、通知レベルと共にサーバーのデータベースに登録し
-        通知クライアントの1種として保存する(何個でも設定できる)
-      operationId: addWebNotifyClient
-      parameters:
-      - description: 取得対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostRegisterWebPushRequest'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyClientStruct'
-          description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Create webpush notify client
-      tags:
-      - notify
-  /accounts/{accountID}/notify/conditions:
-    get:
-      description: 通知条件一覧を取得します
-      operationId: getNotifyConditions
-      parameters:
-      - description: 取得対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 条件種別
-        explode: true
-        in: query
-        name: type
-        required: false
-        schema:
-          default: all
-          enum:
-          - all
-          - tag
-          - artist
-          example: all
-          maximum: 9
-          minimum: 0
-          type: string
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetNotifyConditionsResponse'
-          description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Get notify conditions
-      tags:
-      - notify
-    post:
-      description: 通知条件を追加します
-      operationId: registerNotifyCondition
-      parameters:
-      - description: 取得対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NotifyConditionStruct'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyConditionStruct'
-          description: OK
-      summary: Register notify condition
-      tags:
-      - notify
-  /accounts/{accountID}/notify/clients/line:
-    post:
-      description: '"ユーザー発行の"LINENotifyのトークンとデバイス名をPOSTして、通知クライアントの一種として保存する。(何個でも設定できる)'
-      operationId: addLineNotifyClient
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostRegisterLineNotifyRequest'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyClientStruct'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Bad Request
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Create line notify client
-      tags:
-      - notify
-  /accounts/{accountID}/notify/clients/{notifyClientID}:
-    delete:
-      description: 指定した通知クライアントを削除します
-      operationId: deleteNotifyClient
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 対象の通知クライアントID
-        explode: false
-        in: path
-        name: notifyClientID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      responses:
-        "204":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: No Content
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Delete notify client
-      tags:
-      - notify
-    get:
-      description: 指定した通知クライアント情報を取得します
-      operationId: getNotifyClient
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 対象の通知クライアントID
-        explode: false
-        in: path
-        name: notifyClientID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyClientStruct'
-          description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Get notify client
-      tags:
-      - notify
-    patch:
-      description: 指定した通知クライアント情報を編集します
-      operationId: editNotifyClient
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 対象の通知クライアントID
-        explode: false
-        in: path
-        name: notifyClientID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NotifyClientStruct'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyClientStruct'
-          description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Edit notify client
-      tags:
-      - notify
-  /accounts/{accountID}/notify/conditions/{conditionID}:
-    delete:
-      description: 通知条件を削除します
-      operationId: deleteNotifyCondition
-      parameters:
-      - description: 対象の通知条件ID
-        explode: false
-        in: path
-        name: conditionID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      responses:
-        "204":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: No Content
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Delete notify condition
-      tags:
-      - notify
-    get:
-      description: 通知条件を取得します
-      operationId: getNotifyCondition
-      parameters:
-      - description: 対象の通知条件ID
-        explode: false
-        in: path
-        name: conditionID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyConditionStruct'
-          description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Get notify condition
-      tags:
-      - notify
-    patch:
-      description: 通知条件を編集します
-      operationId: editNotifyCondition
-      parameters:
-      - description: 対象の通知条件ID
-        explode: false
-        in: path
-        name: conditionID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NotifyConditionStruct'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotifyConditionStruct'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Bad Request
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Edit notify condition
-      tags:
-      - notify
-  /accounts/{accountID}/timeline/follow:
-    post:
-      description: 絵師をフォローします
-      operationId: followArtist
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LightArtistStruct'
-      responses:
-        "204":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: No Content
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Conflict
-      summary: Follow artist
-      tags:
-      - timeline
-  /accounts/{accountID}/timeline/unfollow:
-    post:
-      description: 絵師のフォローを解除します
-      operationId: unfollowArtist
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LightArtistStruct'
-      responses:
-        "204":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: No Content
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Conflict
-      summary: Unfollow artist
-      tags:
-      - timeline
-  /accounts/{accountID}/timeline:
-    get:
-      description: フォロー中の絵師ID一覧を取得します
-      operationId: getFollowingArtists
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      - description: ソート方法 l:いいね数順 d:投稿日順
-        explode: true
-        in: query
-        name: sort
-        required: false
-        schema:
-          default: d
-          enum:
-          - l
-          - d
-          example: d
-          type: string
-        style: form
-      - description: ソート方向 d:降順(大→小) a:昇順(小→大)
-        explode: true
-        in: query
-        name: order
-        required: false
-        schema:
-          default: d
-          enum:
-          - d
-          - a
-          example: d
-          maxLength: 1
-          minLength: 1
-          type: string
-        style: form
-      - description: 'ページ番号 (NOTE: 1ページ辺りの応答は20件)'
-        explode: true
-        in: query
-        name: page
-        required: false
-        schema:
-          minimum: 1
-          type: integer
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetTimelineFollowingResponse'
-          description: OK
-      summary: Get timeline followings
-      tags:
-      - timeline
-  /accounts/{accountID}/mylists:
-    get:
-      description: 指定したユーザーのマイリスト一覧を取得します
-      operationId: getUserMylists
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetMylistListResponse'
-          description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Not Found
-      summary: Get user mylists
-      tags:
-      - mylist
-    post:
-      description: マイリストを作成します
-      operationId: createMylist
-      parameters:
-      - description: 対象のアカウントID
-        explode: false
-        in: path
-        name: accountID
-        required: true
-        schema:
-          type: integer
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MylistStruct'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MylistStruct'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Bad Request
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Forbidden
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Conflict
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GeneralMessageResponse'
-          description: Too Many Requests
-      summary: Create user mylist
-      tags:
-      - mylist
   /accounts/{accountID}/mutes:
     get:
       description: 指定したアカウントのユーザーのミュート一覧を取得します
@@ -1189,48 +438,790 @@ paths:
       summary: Get mute
       tags:
       - mutes
+  /accounts/{accountID}/mylists:
+    get:
+      description: 指定したユーザーのマイリスト一覧を取得します
+      operationId: getUserMylists
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMylistListResponse'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Get user mylists
+      tags:
+      - mylist
+    post:
+      description: マイリストを作成します
+      operationId: createMylist
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MylistStruct'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MylistStruct'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Bad Request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Conflict
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Too Many Requests
+      summary: Create user mylist
+      tags:
+      - mylist
+  /accounts/{accountID}/notify/clients:
+    get:
+      description: 現在のユーザーが設定済みの通知クライアント一覧を取得します
+      operationId: getNotifyClients
+      parameters:
+      - description: 取得対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotifyClientsResponse'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Get notify clients
+      tags:
+      - notify
+  /accounts/{accountID}/notify/clients/line:
+    post:
+      description: '"ユーザー発行の"LINENotifyのトークンとデバイス名をPOSTして、通知クライアントの一種として保存する。(何個でも設定できる)'
+      operationId: addLineNotifyClient
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRegisterLineNotifyRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyClientStruct'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Bad Request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Create line notify client
+      tags:
+      - notify
+  /accounts/{accountID}/notify/clients/web:
+    post:
+      description: |-
+        クライアント側で作成したパブリック/プライベートVAPIDキーを
+        userID、クライアント名、通知レベルと共にサーバーのデータベースに登録し
+        通知クライアントの1種として保存する(何個でも設定できる)
+      operationId: addWebNotifyClient
+      parameters:
+      - description: 取得対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRegisterWebPushRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyClientStruct'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Create webpush notify client
+      tags:
+      - notify
+  /accounts/{accountID}/notify/clients/{notifyClientID}:
+    delete:
+      description: 指定した通知クライアントを削除します
+      operationId: deleteNotifyClient
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 対象の通知クライアントID
+        explode: false
+        in: path
+        name: notifyClientID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: No Content
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Delete notify client
+      tags:
+      - notify
+    get:
+      description: 指定した通知クライアント情報を取得します
+      operationId: getNotifyClient
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 対象の通知クライアントID
+        explode: false
+        in: path
+        name: notifyClientID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyClientStruct'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Get notify client
+      tags:
+      - notify
+    patch:
+      description: 指定した通知クライアント情報を編集します
+      operationId: editNotifyClient
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 対象の通知クライアントID
+        explode: false
+        in: path
+        name: notifyClientID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyClientStruct'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyClientStruct'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Edit notify client
+      tags:
+      - notify
+  /accounts/{accountID}/notify/conditions:
+    get:
+      description: 通知条件一覧を取得します
+      operationId: getNotifyConditions
+      parameters:
+      - description: 取得対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 条件種別
+        explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          default: all
+          enum:
+          - all
+          - tag
+          - artist
+          example: all
+          maximum: 9
+          minimum: 0
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNotifyConditionsResponse'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Get notify conditions
+      tags:
+      - notify
+    post:
+      description: 通知条件を追加します
+      operationId: registerNotifyCondition
+      parameters:
+      - description: 取得対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyConditionStruct'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyConditionStruct'
+          description: OK
+      summary: Register notify condition
+      tags:
+      - notify
+  /accounts/{accountID}/notify/conditions/{conditionID}:
+    delete:
+      description: 通知条件を削除します
+      operationId: deleteNotifyCondition
+      parameters:
+      - description: 対象の通知条件ID
+        explode: false
+        in: path
+        name: conditionID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: No Content
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Delete notify condition
+      tags:
+      - notify
+    get:
+      description: 通知条件を取得します
+      operationId: getNotifyCondition
+      parameters:
+      - description: 対象の通知条件ID
+        explode: false
+        in: path
+        name: conditionID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyConditionStruct'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Get notify condition
+      tags:
+      - notify
+    patch:
+      description: 通知条件を編集します
+      operationId: editNotifyCondition
+      parameters:
+      - description: 対象の通知条件ID
+        explode: false
+        in: path
+        name: conditionID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyConditionStruct'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyConditionStruct'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Bad Request
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Edit notify condition
+      tags:
+      - notify
+  /accounts/{accountID}/timeline:
+    get:
+      description: フォロー中の絵師ID一覧を取得します
+      operationId: getFollowingArtists
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: ソート方法 l:いいね数順 d:投稿日順
+        explode: true
+        in: query
+        name: sort
+        required: false
+        schema:
+          default: d
+          enum:
+          - l
+          - d
+          example: d
+          type: string
+        style: form
+      - description: ソート方向 d:降順(大→小) a:昇順(小→大)
+        explode: true
+        in: query
+        name: order
+        required: false
+        schema:
+          default: d
+          enum:
+          - d
+          - a
+          example: d
+          maxLength: 1
+          minLength: 1
+          type: string
+        style: form
+      - description: 'ページ番号 (NOTE: 1ページ辺りの応答は20件)'
+        explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTimelineFollowingResponse'
+          description: OK
+      summary: Get timeline followings
+      tags:
+      - timeline
+  /accounts/{accountID}/timeline/follow:
+    post:
+      description: 絵師をフォローします
+      operationId: followArtist
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LightArtistStruct'
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: No Content
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Conflict
+      summary: Follow artist
+      tags:
+      - timeline
+  /accounts/{accountID}/timeline/unfollow:
+    post:
+      description: 絵師のフォローを解除します
+      operationId: unfollowArtist
+      parameters:
+      - description: 対象のアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LightArtistStruct'
+      responses:
+        "204":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: No Content
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Conflict
+      summary: Unfollow artist
+      tags:
+      - timeline
+  /accounts/{accountID}/upload_history:
+    get:
+      description: イラスト投稿履歴を取得します
+      operationId: getUploadHistory
+      parameters:
+      - description: 取得したいユーザーのアカウントID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: 'ページ番号 (NOTE: 1ページ辺りの応答は20件)'
+        explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+        style: form
+      - description: ソート方法 d:最終更新
+        explode: true
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - d
+          example: d
+          maxLength: 1
+          minLength: 1
+          type: string
+        style: form
+      - description: ソート方向 d:降順(大→小) a:昇順(小→大)
+        explode: true
+        in: query
+        name: order
+        required: false
+        schema:
+          default: d
+          enum:
+          - d
+          - a
+          example: d
+          maxLength: 1
+          minLength: 1
+          type: string
+        style: form
+      - description: 1ページ辺りの要素数
+        explode: true
+        in: query
+        name: per_page
+        required: false
+        schema:
+          default: 20
+          enum:
+          - 20
+          - 40
+          - 60
+          - 80
+          - 100
+          example: 20
+          maximum: 100
+          minimum: 20
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUploadHistoryResponse'
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralMessageResponse'
+          description: Not Found
+      summary: Get upload history
+      tags:
+      - accounts
 components:
   parameters:
-    SearchQuerySort:
-      description: ソート方法 l:いいね数順 d:投稿日順
-      explode: true
-      in: query
-      name: sort
-      required: false
-      schema:
-        default: d
-        enum:
-        - l
-        - d
-        example: d
-        type: string
-      style: form
-    SearchQueryOrder:
-      description: ソート方向 d:降順(大→小) a:昇順(小→大)
-      explode: true
-      in: query
-      name: order
-      required: false
-      schema:
-        default: d
-        enum:
-        - d
-        - a
-        example: d
-        maxLength: 1
-        minLength: 1
-        type: string
-      style: form
-    SearchQueryPage:
-      description: 'ページ番号 (NOTE: 1ページ辺りの応答は20件)'
-      explode: true
-      in: query
-      name: page
-      required: false
-      schema:
-        minimum: 1
-        type: integer
-      style: form
     SearchQueryMylistAllow:
       description: マイリスト追加済みかを取得する0/1 (デフォルト1)
       explode: true
@@ -1264,6 +1255,32 @@ components:
         minimum: 0
         type: integer
       style: form
+    SearchQueryOrder:
+      description: ソート方向 d:降順(大→小) a:昇順(小→大)
+      explode: true
+      in: query
+      name: order
+      required: false
+      schema:
+        default: d
+        enum:
+        - d
+        - a
+        example: d
+        maxLength: 1
+        minLength: 1
+        type: string
+      style: form
+    SearchQueryPage:
+      description: 'ページ番号 (NOTE: 1ページ辺りの応答は20件)'
+      explode: true
+      in: query
+      name: page
+      required: false
+      schema:
+        minimum: 1
+        type: integer
+      style: form
     SearchQueryPerPage:
       description: 1ページ辺りの要素数
       explode: true
@@ -1283,6 +1300,20 @@ components:
         minimum: 20
         type: integer
       style: form
+    SearchQuerySort:
+      description: ソート方法 l:いいね数順 d:投稿日順
+      explode: true
+      in: query
+      name: sort
+      required: false
+      schema:
+        default: d
+        enum:
+        - l
+        - d
+        example: d
+        type: string
+      style: form
     SearchQuerySortCatalog:
       description: ソート方法 c:ヒット数 d:最終更新 l:いいね数 n:名前
       explode: true
@@ -1301,11 +1332,11 @@ components:
       style: form
   schemas:
     AccountStruct:
-      description: アカウントの取得/編集に使うリクエスト
+      description: アカウントの取得/編集に使う構造体
       example:
         access:
-          canCreatePost: true
           canApprovePost: false
+          canCreatePost: true
           canInvite: true
           canLike: true
           canEditPost: false
@@ -1339,16 +1370,12 @@ components:
         displayID: omado
         favorite: 1
       properties:
+        access:
+          $ref: '#/components/schemas/AccountStruct_access'
         accountID:
           description: ユーザーID
           example: 1
           type: integer
-        displayID:
-          description: (Twitterのような)表示IDを指定します。ここで指定したIDがログインに使用されます。英数字のみ入力できます。
-          example: omado
-          maxLength: 20
-          minLength: 3
-          type: string
         apiKey:
           description: APIキー
           example: DUMMY_API_KEY
@@ -1358,19 +1385,42 @@ components:
           example: 1
           minimum: 1
           type: integer
-        permission:
-          default: 0
-          description: 権限レベル 0:普通 5:Modelator 9:SysOp
-          example: 0
+        description:
+          description: 他のユーザーに表示されるユーザー説明文/投稿者説明
+          example: 開発者さん
+          type: string
+        displayID:
+          description: (Twitterのような)表示IDを指定します。ここで指定したIDがログインに使用されます。英数字のみ入力できます。
+          example: omado
+          maxLength: 20
+          minLength: 3
+          type: string
+        favorite:
+          description: ユーザーの推しキャラ(タグID)を選択します
+          example: 1
           minimum: 0
           type: integer
-        password:
-          description: 新しいパスワードを入力します
-          example: kafuuch1n0
-          format: password
-          maxLength: 50
-          minLength: 8
+        invite:
+          $ref: '#/components/schemas/AccountStruct_invite'
+        inviter:
+          $ref: '#/components/schemas/LightAccountStruct'
+        ipfs:
+          $ref: '#/components/schemas/AccountStruct_ipfs'
+        mail:
+          description: ユーザーのメールアドレス(連絡用)
+          example: dsgamer777@gmail.com
+          format: email
+          maxLength: 150
+          minLength: 1
           type: string
+        name:
+          description: 他のユーザーに表示されるユーザー名/投稿者名
+          example: お窓
+          maxLength: 20
+          minLength: 1
+          type: string
+        notify:
+          $ref: '#/components/schemas/AccountStruct_notify'
         oldPassword:
           description: |-
             現時点のパスワードを入力します。
@@ -1380,118 +1430,100 @@ components:
           maxLength: 50
           minLength: 8
           type: string
-        mail:
-          description: ユーザーのメールアドレス(連絡用)
-          example: dsgamer777@gmail.com
-          format: email
-          maxLength: 150
-          minLength: 1
+        password:
+          description: 新しいパスワードを入力します
+          example: kafuuch1n0
+          format: password
+          maxLength: 50
+          minLength: 8
           type: string
+        permission:
+          default: 0
+          description: 権限レベル 0:普通 5:Modelator 9:SysOp
+          example: 0
+          minimum: 0
+          type: integer
         totpEnabled:
           default: false
           description: TOTPが有効かが入ります
           type: boolean
-        name:
-          description: 他のユーザーに表示されるユーザー名/投稿者名
-          example: お窓
-          maxLength: 20
-          minLength: 1
-          type: string
-        description:
-          description: 他のユーザーに表示されるユーザー説明文/投稿者説明
-          example: 開発者さん
-          type: string
-        favorite:
-          description: ユーザーの推しキャラ(タグID)を選択します
-          example: 1
-          minimum: 0
-          type: integer
-        access:
-          $ref: '#/components/schemas/AccountStruct_access'
-        inviter:
-          $ref: '#/components/schemas/LightAccountStruct'
-        invite:
-          $ref: '#/components/schemas/AccountStruct_invite'
-        notify:
-          $ref: '#/components/schemas/AccountStruct_notify'
-        ipfs:
-          $ref: '#/components/schemas/AccountStruct_ipfs'
       title: AccountStruct
       type: object
       x-examples:
         example-admin:
-          accountID: 1
-          displayID: omado
-          apiKey: DUMMY_ADMIN_API_KEY
-          apiSeq: 1
-          permission: 9
-          password: kafuuch1n0
-          oldPassword: h0t0c0c0a
-          mail: dsgamer777@gmail.com
-          totpEnabled: false
-          name: お窓
-          description: 開発者さん
-          favorite: 1
           access:
-            canInvite: true
-            canLike: true
+            canApprovePost: true
             canComment: true
             canCreatePost: true
             canEditPost: true
-            canApprovePost: true
+            canInvite: true
+            canLike: true
+          accountID: 1
+          apiKey: DUMMY_ADMIN_API_KEY
+          apiSeq: 1
+          description: 開発者さん
+          displayID: omado
+          favorite: 1
+          invite:
+            code: USAGIDEV
+            inviteID: 1
+            invitedCount: 0
           inviter:
             accountID: 1
             name: お窓
-          invite:
-            inviteID: 1
-            code: USAGIDEV
-            invitedCount: 0
+          ipfs:
+            gatewayEnabled: false
+            gatewayUrl: https://cloudflare-ipfs.com
+            nodeEnabled: false
+            nodeUrl: ""
+            pinEnabled: true
+          mail: dsgamer777@gmail.com
+          name: お窓
           notify:
             hasLineNotify: false
             hasWebNotify: false
-          ipfs:
-            gatewayUrl: https://cloudflare-ipfs.com
-            nodeUrl: ""
-            gatewayEnabled: false
-            nodeEnabled: false
-            pinEnabled: true
-        example-user:
-          accountID: 2
-          displayID: chino
-          apiKey: DUMMY_API_KEY
-          apiSeq: 1
-          permission: 0
-          password: h0t0c0c0a
-          oldPassword: kafuuch1n0
-          mail: dsgamer777@gmail.com
+          oldPassword: h0t0c0c0a
+          password: kafuuch1n0
+          permission: 9
           totpEnabled: false
-          name: 香風智乃
-          description: ラビットハウスの一人娘。クールな性格だがココアのことは嫌いじゃない…!? コーヒーに詳しいしっかり者。
-          favorite: 1
+        example-user:
           access:
-            canInvite: true
-            canLike: true
+            canApprovePost: false
             canComment: true
             canCreatePost: true
             canEditPost: false
-            canApprovePost: false
+            canInvite: true
+            canLike: true
+          accountID: 2
+          apiKey: DUMMY_API_KEY
+          apiSeq: 1
+          description: ラビットハウスの一人娘。クールな性格だがココアのことは嫌いじゃない…!? コーヒーに詳しいしっかり者。
+          displayID: chino
+          favorite: 1
+          invite:
+            code: USAGIDEV
+            inviteID: 1
+            invitedCount: 0
           inviter:
             accountID: 1
             name: お窓
-          invite:
-            inviteID: 1
-            code: USAGIDEV
-            invitedCount: 0
+          ipfs:
+            gatewayEnabled: false
+            gatewayUrl: https://cloudflare-ipfs.com
+            nodeEnabled: false
+            nodeUrl: ""
+            pinEnabled: false
+          mail: dsgamer777@gmail.com
+          name: 香風智乃
           notify:
             hasLineNotify: false
             hasWebNotify: false
-          ipfs:
-            gatewayUrl: https://cloudflare-ipfs.com
-            nodeUrl: ""
-            gatewayEnabled: false
-            nodeEnabled: false
-            pinEnabled: false
+          oldPassword: kafuuch1n0
+          password: h0t0c0c0a
+          permission: 0
+          totpEnabled: false
     GeneralMessageResponse:
+      description: 共通の応答構造体(404/401/400等を返す際に使用)
       example:
         message: message
       properties:
@@ -1504,15 +1536,61 @@ components:
       title: GeneralMessageResponse
       type: object
       x-examples:
-        not-found:
-          message: Specified content was not found.
-        no-permission:
-          message: You don't have enough permission to do it.
         bad-request:
           message: Your request body is wrong.
         locked:
           message: Specified content is referenced from other content.
-    GetUploadHistoryResponse:
+        no-permission:
+          message: You don't have enough permission to do it.
+        not-found:
+          message: Specified content was not found.
+    GetMutesResponse:
+      description: ミュート情報一覧の応答構造体
+      example:
+        artists:
+        - accountID: 1
+          muteID: 1
+          targetID: 1
+          targetType: tag
+        - accountID: 1
+          muteID: 1
+          targetID: 1
+          targetType: tag
+        tags:
+        - accountID: 1
+          muteID: 1
+          targetID: 1
+          targetType: tag
+        - accountID: 1
+          muteID: 1
+          targetID: 1
+          targetType: tag
+      properties:
+        artists:
+          description: ミュート中の絵師ID配列
+          items:
+            $ref: '#/components/schemas/MuteStruct'
+          type: array
+        tags:
+          description: ミュート中のタグID配列
+          items:
+            $ref: '#/components/schemas/MuteStruct'
+          type: array
+      required:
+      - artists
+      - tags
+      title: GetMutesResponse
+      type: object
+      x-examples:
+        example:
+          artists: []
+          tags:
+          - accountID: 1
+            muteID: 1
+            targetID: 1
+            targetType: tag
+    GetMylistListResponse:
+      description: マイリスト情報一覧の応答構造体
       example:
         pagination:
           current: 1
@@ -1522,89 +1600,185 @@ components:
           title: 香風智乃
           type: tag
         contents:
-        - accountID: 1
-          artID: 1
-          uploadID: 1
-          started: 2021-02-21 22:24:22
-          finished: 2021-02-21 22:24:27
-          status: 5
-        - accountID: 1
-          artID: 1
-          uploadID: 1
-          started: 2021-02-21 22:24:22
-          finished: 2021-02-21 22:24:27
-          status: 5
+        - owner:
+            accountID: 1
+            name: お窓
+          private: true
+          createdDate: 2021-03-14T02:16:03Z
+          name: お窓のマイリスト
+          description: ユーザーデフォルトマイリスト
+          updatedDate: 2021-03-14T02:16:03Z
+          arts:
+          - nsfw: false
+            caption: Ｃ８９の新刊表紙となっていますっ
+            mylists: 0
+            title: 魔法少女は深淵になにをみるか？
+            artID: 1
+            datetime: 2015-12-27T07:29:00Z
+            mylisted: false
+            file:
+              ipfsHash:
+                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+            artists:
+            - name: 彩電
+              artistID: 1
+            - name: 彩電
+              artistID: 1
+            similarity: 0.08008281904610115
+            uploader:
+              accountID: 1
+              name: お窓
+            originUrl: https://www.pixiv.net/artworks/54265978
+            originService: Pixiv
+            page: 1
+            views: 0
+            likes: 0
+          - nsfw: false
+            caption: Ｃ８９の新刊表紙となっていますっ
+            mylists: 0
+            title: 魔法少女は深淵になにをみるか？
+            artID: 1
+            datetime: 2015-12-27T07:29:00Z
+            mylisted: false
+            file:
+              ipfsHash:
+                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+            artists:
+            - name: 彩電
+              artistID: 1
+            - name: 彩電
+              artistID: 1
+            similarity: 0.08008281904610115
+            uploader:
+              accountID: 1
+              name: お窓
+            originUrl: https://www.pixiv.net/artworks/54265978
+            originService: Pixiv
+            page: 1
+            views: 0
+            likes: 0
+          mylistID: 1
+        - owner:
+            accountID: 1
+            name: お窓
+          private: true
+          createdDate: 2021-03-14T02:16:03Z
+          name: お窓のマイリスト
+          description: ユーザーデフォルトマイリスト
+          updatedDate: 2021-03-14T02:16:03Z
+          arts:
+          - nsfw: false
+            caption: Ｃ８９の新刊表紙となっていますっ
+            mylists: 0
+            title: 魔法少女は深淵になにをみるか？
+            artID: 1
+            datetime: 2015-12-27T07:29:00Z
+            mylisted: false
+            file:
+              ipfsHash:
+                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+            artists:
+            - name: 彩電
+              artistID: 1
+            - name: 彩電
+              artistID: 1
+            similarity: 0.08008281904610115
+            uploader:
+              accountID: 1
+              name: お窓
+            originUrl: https://www.pixiv.net/artworks/54265978
+            originService: Pixiv
+            page: 1
+            views: 0
+            likes: 0
+          - nsfw: false
+            caption: Ｃ８９の新刊表紙となっていますっ
+            mylists: 0
+            title: 魔法少女は深淵になにをみるか？
+            artID: 1
+            datetime: 2015-12-27T07:29:00Z
+            mylisted: false
+            file:
+              ipfsHash:
+                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+            artists:
+            - name: 彩電
+              artistID: 1
+            - name: 彩電
+              artistID: 1
+            similarity: 0.08008281904610115
+            uploader:
+              accountID: 1
+              name: お窓
+            originUrl: https://www.pixiv.net/artworks/54265978
+            originService: Pixiv
+            page: 1
+            views: 0
+            likes: 0
+          mylistID: 1
       properties:
-        pagination:
-          $ref: '#/components/schemas/PaginationStruct'
         contents:
-          description: |-
-            指定された範囲で一致するデータ
-            一致するものがなければ空配列
           items:
-            $ref: '#/components/schemas/UploadHistoryStruct'
-          minItems: 0
+            $ref: '#/components/schemas/MylistStruct'
+          minItems: 1
           type: array
           uniqueItems: true
-      title: GetUploadHistoryResponse
+        pagination:
+          $ref: '#/components/schemas/PaginationStruct'
+      required:
+      - contents
+      - pagination
+      title: GetMylistListResponse
       type: object
       x-examples:
         example:
+          contents:
+          - arts:
+            - artID: 1
+              artists:
+              - artistID: 1
+                name: 彩電
+              caption: Ｃ８９の新刊表紙となっていますっ
+              datetime: 2015-12-27T07:29:00Z
+              file:
+                ipfsHash:
+                  orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+                  thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+              likes: 0
+              mylisted: false
+              mylists: 0
+              nsfw: false
+              originService: Pixiv
+              originUrl: https://www.pixiv.net/artworks/54265978
+              page: 1
+              similarity: 0
+              title: 魔法少女は深淵になにをみるか？
+              uploader:
+                accountID: 1
+                name: お窓
+              views: 0
+            createdDate: 2021-03-14T02:16:03Z
+            description: string
+            mylistID: 1
+            name: お窓のマイリスト
+            owner:
+              accountID: 1
+              name: お窓
+            private: true
+            updatedDate: 2021-03-14T02:16:03Z
           pagination:
-            title: 投稿履歴一覧
-            type: upload-history
             count: 1
             current: 1
             pages: 1
             perPage: 20
-          contents:
-          - uploadID: 1
-            started: 2021-02-21 22:24:22
-            finished: 2021-02-21 22:24:27
-            status: 5
-            artID: 1
-    PostLoginWithFormRequest:
-      example:
-        password: password
-        id: id
-        totpCode: totpCode
-      properties:
-        id:
-          description: ログインID
-          minLength: 1
-          type: string
-        password:
-          description: ログインパスワード
-          minLength: 1
-          type: string
-        totpCode:
-          description: ログインTOTPトークン
-          type: string
-      required:
-      - id
-      - password
-      title: PostLoginWithFormRequest
-      type: object
-      x-examples:
-        admin:
-          id: omado
-          password: kafuuch1n0
-        user:
-          id: chino
-          password: h0t0c0c0a
-    PostLoginWithFormResponse:
-      example:
-        apiKey: apiKey
-      properties:
-        apiKey:
-          minLength: 1
-          type: string
-      title: PostLoginWithFormResponse
-      type: object
-      x-examples:
-        example:
-          apiKey: DUMMY_API_KEY
+            title: マイリスト一覧
+            type: mylist
     GetNotifyClientsResponse:
+      description: 通知クライアント情報一覧の応答構造体
       example:
         clients:
         - accountID: 1
@@ -1627,191 +1801,12 @@ components:
       x-examples:
         example:
           clients:
-          - notifyClientID: 1
-            accountID: 1
+          - level: 5
             name: ChinoPhone
+            notifyClientID: 1
             type: webpush
-            level: 5
-    PostRegisterWebPushRequest:
-      example:
-        endpoint: https://example.com/webpush/endpoint
-        auth: DUMMY_AUTH_TOKEN
-        level: 5
-        name: ChinoLaptop
-        p256dh: DUMMY_PUBLIC_KEY
-      properties:
-        endpoint:
-          description: WebPushのPOST先エンドポイント(ユーザー毎に異なる)
-          example: https://example.com/webpush/endpoint
-          format: uri-reference
-          maxLength: 200
-          minLength: 1
-          type: string
-        p256dh:
-          description: ブラウザ公開鍵
-          example: DUMMY_PUBLIC_KEY
-          maxLength: 200
-          minLength: 10
-          type: string
-        auth:
-          description: WebPushの通知送信認証キー
-          example: DUMMY_AUTH_TOKEN
-          maxLength: 200
-          minLength: 10
-          type: string
-        name:
-          description: 通知クライアント名
-          example: ChinoLaptop
-          maxLength: 30
-          minLength: 1
-          type: string
-        level:
-          default: 5
-          description: 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
-          enum:
-          - 1
-          - 5
-          - 9
-          example: 5
-          format: int32
-          maximum: 9
-          minimum: 1
-          type: integer
-      required:
-      - auth
-      - endpoint
-      - level
-      - name
-      - p256dh
-      title: PostRegisterWebPushRequest
-      type: object
-      x-examples:
-        example:
-          endpoint: https://example.com/webpush/endpoint
-          p256dh: DUMMY_PUBLIC_KEY
-          auth: DUMMY_AUTH_TOKEN
-          name: ChinoLaptop
-          level: 5
-    NotifyClientStruct:
-      example:
-        accountID: 1
-        level: 5
-        name: ChinoPhone
-        notifyClientID: 1
-        type: webpush
-      properties:
-        notifyClientID:
-          description: 通知クライアントID
-          example: 1
-          minimum: 1
-          type: integer
-        accountID:
-          description: 情報作成者のアカウントID
-          example: 1
-          minimum: 1
-          type: integer
-        name:
-          description: ユーザーが指定した通知クライアント名
-          example: ChinoPhone
-          maxLength: 30
-          minLength: 1
-          type: string
-        type:
-          default: webpush
-          description: クライアント種別
-          enum:
-          - webpush
-          - linenotify
-          example: webpush
-          maxLength: 20
-          minLength: 1
-          type: string
-        level:
-          default: 5
-          description: 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
-          enum:
-          - 1
-          - 5
-          - 9
-          example: 5
-          format: int32
-          maximum: 9
-          minimum: 1
-          type: integer
-      title: NotifyClientStruct
-      type: object
-      x-examples:
-        example:
-          notifyClientID: 1
-          accountID: 1
-          name: ChinoPhone
-          type: webpush
-          level: 5
-    NotifyConditionStruct:
-      example:
-        accountID: 1
-        targetID: 1
-        notifyConditionID: 1
-        targetMethod: all
-        targetClient: -1
-        targetType: tag
-      properties:
-        notifyConditionID:
-          description: NotifyConditionID
-          example: 1
-          minimum: 1
-          type: integer
-        accountID:
-          description: 情報作成者のアカウントID
-          example: 1
-          minimum: 1
-          type: integer
-        targetType:
-          default: tag
-          description: 条件種別
-          enum:
-          - all
-          - tag
-          - artist
-          example: tag
-          maxLength: 10
-          minLength: 1
-          type: string
-        targetID:
-          default: 0
-          description: 条件ID 全通知なら0/タグID/絵師ID
-          example: 1
-          minimum: 0
-          type: integer
-        targetMethod:
-          default: all
-          description: 通知方法
-          enum:
-          - all
-          - webpush
-          - linenotify
-          example: all
-          maxLength: 30
-          minLength: 1
-          type: string
-        targetClient:
-          default: -1
-          description: 対象の通知クライアント(ターゲットが全てなら-1)
-          example: -1
-          format: int32
-          minimum: -1
-          type: integer
-      title: NotifyConditionStruct
-      type: object
-      x-examples:
-        example:
-          notifyConditionID: 1
-          accountID: 1
-          targetType: tag
-          targetID: 1
-          targetMethod: all
-          targetClient: -1
     GetNotifyConditionsResponse:
+      description: 通知条件情報一覧の応答構造体
       example:
         pagination:
           current: 1
@@ -1834,87 +1829,32 @@ components:
           targetClient: -1
           targetType: tag
       properties:
-        pagination:
-          $ref: '#/components/schemas/PaginationStruct'
         conditions:
           items:
             $ref: '#/components/schemas/NotifyConditionStruct'
           type: array
+        pagination:
+          $ref: '#/components/schemas/PaginationStruct'
       title: GetNotifyConditionsResponse
       type: object
       x-examples:
         example:
+          conditions:
+          - accountID: 1
+            notifyConditionID: 1
+            targetClient: -1
+            targetID: 1
+            targetMethod: all
+            targetType: tag
           pagination:
-            title: 通知条件一覧
-            type: notify-condition
             count: 1
             current: 1
             pages: 1
             perPage: 20
-          conditions:
-          - notifyConditionID: 1
-            accountID: 1
-            targetType: tag
-            targetID: 1
-            targetMethod: all
-            targetClient: -1
-    PostRegisterLineNotifyRequest:
-      example:
-        level: 5
-        name: 1対1で受け取る
-        token: DUMMY_LINE_NOTIFY_TOKEN_BEARER
-      properties:
-        token:
-          description: LineNotifyのパーソナルトークン
-          example: DUMMY_LINE_NOTIFY_TOKEN_BEARER
-          maxLength: 120
-          minLength: 30
-          type: string
-        name:
-          description: 通知クライアント名
-          example: 1対1で受け取る
-          type: string
-        level:
-          default: 5
-          description: 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
-          enum:
-          - 1
-          - 5
-          - 9
-          example: 5
-          format: int32
-          maximum: 9
-          minimum: 1
-          type: integer
-      required:
-      - level
-      - name
-      - token
-      title: PostRegisterLineNotifyRequest
-      type: object
-      x-examples:
-        example:
-          token: DUMMY_LINE_NOTIFY_TOKEN_BEARER
-          name: 1対1で受け取る
-          level: 5
-    LightArtistStruct:
-      example:
-        name: 彩電
-        artistID: 1
-      properties:
-        artistID:
-          example: 1
-          type: integer
-        name:
-          example: 彩電
-          type: string
-      title: LightArtistStruct
-      type: object
-      x-examples:
-        example:
-          artistID: 1
-          name: 彩電
+            title: 通知条件一覧
+            type: notify-condition
     GetTimelineFollowingResponse:
+      description: タイムラインのフォロー一覧の応答構造体
       example:
         pagination:
           current: 1
@@ -1929,27 +1869,28 @@ components:
         - name: 彩電
           artistID: 1
       properties:
-        pagination:
-          $ref: '#/components/schemas/PaginationStruct'
         follows:
           items:
             $ref: '#/components/schemas/LightArtistStruct'
           type: array
+        pagination:
+          $ref: '#/components/schemas/PaginationStruct'
       title: GetTimelineFollowingResponse
       type: object
       x-examples:
         example:
+          follows:
+          - artistID: 1
+            name: 彩電
           pagination:
-            title: フォロー一覧
-            type: follow
             count: 1
             current: 1
             pages: 1
             perPage: 20
-          follows:
-          - artistID: 1
-            name: 彩電
-    GetMylistListResponse:
+            title: フォロー一覧
+            type: follow
+    GetUploadHistoryResponse:
+      description: 投稿履歴情報一覧の応答構造体
       example:
         pagination:
           current: 1
@@ -1959,400 +1900,50 @@ components:
           title: 香風智乃
           type: tag
         contents:
-        - owner:
-            accountID: 1
-            name: お窓
-          private: true
-          createdDate: 2021-03-14T02:16:03Z
-          name: お窓のマイリスト
-          description: ユーザーデフォルトマイリスト
-          updatedDate: 2021-03-14T02:16:03Z
-          arts:
-          - nsfw: false
-            caption: Ｃ８９の新刊表紙となっていますっ
-            title: 魔法少女は深淵になにをみるか？
-            mylists: 0
-            artID: 1
-            datetime: 2015-12-27T07:29:00Z
-            mylisted: false
-            file:
-              ipfsHash:
-                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-            artists:
-            - name: 彩電
-              artistID: 1
-            - name: 彩電
-              artistID: 1
-            uploader:
-              accountID: 1
-              name: お窓
-            similarity: 0.08008281904610115
-            originUrl: https://www.pixiv.net/artworks/54265978
-            page: 1
-            originService: Pixiv
-            views: 0
-            likes: 0
-          - nsfw: false
-            caption: Ｃ８９の新刊表紙となっていますっ
-            title: 魔法少女は深淵になにをみるか？
-            mylists: 0
-            artID: 1
-            datetime: 2015-12-27T07:29:00Z
-            mylisted: false
-            file:
-              ipfsHash:
-                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-            artists:
-            - name: 彩電
-              artistID: 1
-            - name: 彩電
-              artistID: 1
-            uploader:
-              accountID: 1
-              name: お窓
-            similarity: 0.08008281904610115
-            originUrl: https://www.pixiv.net/artworks/54265978
-            page: 1
-            originService: Pixiv
-            views: 0
-            likes: 0
-          mylistID: 1
-        - owner:
-            accountID: 1
-            name: お窓
-          private: true
-          createdDate: 2021-03-14T02:16:03Z
-          name: お窓のマイリスト
-          description: ユーザーデフォルトマイリスト
-          updatedDate: 2021-03-14T02:16:03Z
-          arts:
-          - nsfw: false
-            caption: Ｃ８９の新刊表紙となっていますっ
-            title: 魔法少女は深淵になにをみるか？
-            mylists: 0
-            artID: 1
-            datetime: 2015-12-27T07:29:00Z
-            mylisted: false
-            file:
-              ipfsHash:
-                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-            artists:
-            - name: 彩電
-              artistID: 1
-            - name: 彩電
-              artistID: 1
-            uploader:
-              accountID: 1
-              name: お窓
-            similarity: 0.08008281904610115
-            originUrl: https://www.pixiv.net/artworks/54265978
-            page: 1
-            originService: Pixiv
-            views: 0
-            likes: 0
-          - nsfw: false
-            caption: Ｃ８９の新刊表紙となっていますっ
-            title: 魔法少女は深淵になにをみるか？
-            mylists: 0
-            artID: 1
-            datetime: 2015-12-27T07:29:00Z
-            mylisted: false
-            file:
-              ipfsHash:
-                thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-                orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-            artists:
-            - name: 彩電
-              artistID: 1
-            - name: 彩電
-              artistID: 1
-            uploader:
-              accountID: 1
-              name: お窓
-            similarity: 0.08008281904610115
-            originUrl: https://www.pixiv.net/artworks/54265978
-            page: 1
-            originService: Pixiv
-            views: 0
-            likes: 0
-          mylistID: 1
+        - accountID: 1
+          artID: 1
+          uploadID: 1
+          finished: 2021-02-21 22:24:27
+          started: 2021-02-21 22:24:22
+          status: 5
+        - accountID: 1
+          artID: 1
+          uploadID: 1
+          finished: 2021-02-21 22:24:27
+          started: 2021-02-21 22:24:22
+          status: 5
       properties:
-        pagination:
-          $ref: '#/components/schemas/PaginationStruct'
         contents:
+          description: |-
+            指定された範囲で一致するデータ
+            一致するものがなければ空配列
           items:
-            $ref: '#/components/schemas/MylistStruct'
-          minItems: 1
+            $ref: '#/components/schemas/UploadHistoryStruct'
+          minItems: 0
           type: array
           uniqueItems: true
-      required:
-      - contents
-      - pagination
-      title: GetMylistListResponse
+        pagination:
+          $ref: '#/components/schemas/PaginationStruct'
+      title: GetUploadHistoryResponse
       type: object
       x-examples:
         example:
+          contents:
+          - accountID: 1
+            artID: 1
+            finished: 2021-02-21 22:24:27
+            started: 2021-02-21 22:24:22
+            status: 5
+            uploadID: 1
           pagination:
-            title: マイリスト一覧
-            type: mylist
             count: 1
             current: 1
             pages: 1
             perPage: 20
-          contents:
-          - mylistID: 1
-            name: お窓のマイリスト
-            description: string
-            createdDate: 2021-03-14T02:16:03Z
-            updatedDate: 2021-03-14T02:16:03Z
-            private: true
-            arts:
-            - artID: 1
-              title: 魔法少女は深淵になにをみるか？
-              caption: Ｃ８９の新刊表紙となっていますっ
-              datetime: 2015-12-27T07:29:00Z
-              page: 1
-              likes: 0
-              views: 0
-              mylists: 0
-              mylisted: false
-              uploader:
-                accountID: 1
-                name: お窓
-              artists:
-              - artistID: 1
-                name: 彩電
-              originUrl: https://www.pixiv.net/artworks/54265978
-              originService: Pixiv
-              nsfw: false
-              file:
-                ipfsHash:
-                  thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-                  orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-              similarity: 0
-            owner:
-              accountID: 1
-              name: お窓
-    MylistStruct:
-      example:
-        owner:
-          accountID: 1
-          name: お窓
-        private: true
-        createdDate: 2021-03-14T02:16:03Z
-        name: お窓のマイリスト
-        description: ユーザーデフォルトマイリスト
-        updatedDate: 2021-03-14T02:16:03Z
-        arts:
-        - nsfw: false
-          caption: Ｃ８９の新刊表紙となっていますっ
-          title: 魔法少女は深淵になにをみるか？
-          mylists: 0
-          artID: 1
-          datetime: 2015-12-27T07:29:00Z
-          mylisted: false
-          file:
-            ipfsHash:
-              thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-              orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-          artists:
-          - name: 彩電
-            artistID: 1
-          - name: 彩電
-            artistID: 1
-          uploader:
-            accountID: 1
-            name: お窓
-          similarity: 0.08008281904610115
-          originUrl: https://www.pixiv.net/artworks/54265978
-          page: 1
-          originService: Pixiv
-          views: 0
-          likes: 0
-        - nsfw: false
-          caption: Ｃ８９の新刊表紙となっていますっ
-          title: 魔法少女は深淵になにをみるか？
-          mylists: 0
-          artID: 1
-          datetime: 2015-12-27T07:29:00Z
-          mylisted: false
-          file:
-            ipfsHash:
-              thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-              orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-          artists:
-          - name: 彩電
-            artistID: 1
-          - name: 彩電
-            artistID: 1
-          uploader:
-            accountID: 1
-            name: お窓
-          similarity: 0.08008281904610115
-          originUrl: https://www.pixiv.net/artworks/54265978
-          page: 1
-          originService: Pixiv
-          views: 0
-          likes: 0
-        mylistID: 1
-      properties:
-        mylistID:
-          description: マイリストID
-          example: 1
-          minimum: 1
-          type: integer
-        name:
-          description: マイリスト名
-          example: お窓のマイリスト
-          minLength: 1
-          type: string
-        description:
-          description: マイリスト説明文
-          example: ユーザーデフォルトマイリスト
-          type: string
-        createdDate:
-          description: マイリスト作成日時
-          example: 2021-03-14T02:16:03Z
-          format: date-time
-          type: string
-        updatedDate:
-          description: マイリスト更新日時
-          example: 2021-03-14T02:16:03Z
-          format: date-time
-          type: string
-        private:
-          default: true
-          description: 公開/非公開
-          type: boolean
-        arts:
-          description: イラストID一覧
-          items:
-            $ref: '#/components/schemas/LightArtStruct'
-          type: array
-        owner:
-          $ref: '#/components/schemas/LightAccountStruct'
-      title: MylistStruct
-      type: object
-      x-examples:
-        example:
-          mylistID: 1
-          name: お窓のマイリスト
-          description: ユーザーデフォルトマイリスト
-          createdDate: 2021-03-14T02:16:03Z
-          updatedDate: 2021-03-14T02:16:03Z
-          private: true
-          arts:
-          - artID: 0
-            title: string
-            caption: string
-            datetime: 2021-01-07 12:48:42
-            page: 0
-            likes: 0
-            views: 0
-            mylists: 0
-            mylisted: true
-            uploader:
-              accountID: 1
-              name: お窓
-            artists:
-            - artistID: 1
-              name: 彩電
-            originUrl: string
-            originService: string
-            nsfw: true
-            file:
-              ipfsHash:
-                thumb: string
-                orig: string
-            similarity: 0
-          owner:
-            accountID: 1
-            name: お窓
-    GetMutesResponse:
-      example:
-        artists:
-        - accountID: 1
-          muteID: 1
-          targetID: 1
-          targetType: tag
-        - accountID: 1
-          muteID: 1
-          targetID: 1
-          targetType: tag
-        tags:
-        - accountID: 1
-          muteID: 1
-          targetID: 1
-          targetType: tag
-        - accountID: 1
-          muteID: 1
-          targetID: 1
-          targetType: tag
-      properties:
-        tags:
-          description: ミュート中のタグID配列
-          items:
-            $ref: '#/components/schemas/MuteStruct'
-          type: array
-        artists:
-          description: ミュート中の絵師ID配列
-          items:
-            $ref: '#/components/schemas/MuteStruct'
-          type: array
-      required:
-      - artists
-      - tags
-      title: GetMutesResponse
-      type: object
-      x-examples:
-        example:
-          tags:
-          - muteID: 1
-            accountID: 1
-            targetType: tag
-            targetID: 1
-          artists: []
-    MuteStruct:
-      example:
-        accountID: 1
-        muteID: 1
-        targetID: 1
-        targetType: tag
-      properties:
-        muteID:
-          description: ミュートID
-          example: 1
-          minimum: 1
-          type: integer
-        accountID:
-          description: 情報作成者のアカウントID
-          example: 1
-          minimum: 1
-          type: integer
-        targetType:
-          description: ミュート種別
-          enum:
-          - tag
-          - artist
-          example: tag
-          type: string
-        targetID:
-          description: 対象のタグ/絵師ID
-          example: 1
-          minimum: 1
-          type: integer
-      title: MuteStruct
-      type: object
-      x-examples:
-        example:
-          muteID: 1
-          accountID: 1
-          targetID: 1
-          targetType: tag
+            title: 投稿履歴一覧
+            type: upload-history
     LightAccountStruct:
+      description: アカウント情報の簡易構造体(読み取り専用)
       example:
         accountID: 1
         name: お窓
@@ -2372,7 +1963,460 @@ components:
         example:
           accountID: 1
           name: お窓
+    LightArtStruct:
+      description: イラスト情報の簡易構造体(読み取り専用)(検索結果等で利用)
+      example:
+        nsfw: false
+        caption: Ｃ８９の新刊表紙となっていますっ
+        mylists: 0
+        title: 魔法少女は深淵になにをみるか？
+        artID: 1
+        datetime: 2015-12-27T07:29:00Z
+        mylisted: false
+        file:
+          ipfsHash:
+            orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+            thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+        artists:
+        - name: 彩電
+          artistID: 1
+        - name: 彩電
+          artistID: 1
+        similarity: 0.08008281904610115
+        uploader:
+          accountID: 1
+          name: お窓
+        originUrl: https://www.pixiv.net/artworks/54265978
+        originService: Pixiv
+        page: 1
+        views: 0
+        likes: 0
+      properties:
+        artID:
+          description: イラストID
+          example: 1
+          minimum: 1
+          type: integer
+        artists:
+          description: 絵師情報(複数可)
+          items:
+            $ref: '#/components/schemas/LightArtistStruct'
+          type: array
+        caption:
+          description: |-
+            説明文
+            NOTE: 通常出典記載の説明文と同じ物が入る
+          example: Ｃ８９の新刊表紙となっていますっ
+          minLength: 1
+          type: string
+        datetime:
+          description: 登録日(%Y-%m-%d %H:%M:%S)
+          example: 2015-12-27T07:29:00Z
+          format: date-time
+          type: string
+        file:
+          $ref: '#/components/schemas/LightArtStruct_file'
+        likes:
+          default: 0
+          description: 累計いいね数
+          example: 0
+          format: int64
+          minimum: 0
+          type: integer
+        mylisted:
+          default: false
+          description: リクエストしたユーザーがマイリストしているか
+          type: boolean
+        mylists:
+          default: 0
+          description: マイリスト済みのユーザー数
+          example: 0
+          format: int64
+          minimum: 0
+          type: integer
+        nsfw:
+          default: false
+          description: アダルトコンテンツか否か
+          type: boolean
+        originService:
+          description: 出典のサービス名
+          example: Pixiv
+          minLength: 1
+          type: string
+        originUrl:
+          description: 出典URL
+          example: https://www.pixiv.net/artworks/54265978
+          format: uri-reference
+          minLength: 1
+          type: string
+        page:
+          default: 1
+          description: グループになっている場合のページ番号
+          example: 1
+          format: int32
+          minimum: 1
+          type: integer
+        similarity:
+          description: 元画像との類似度(画像検索のみ)
+          maximum: 1
+          minimum: 0
+          type: number
+        title:
+          description: イラスト(作品)名
+          example: 魔法少女は深淵になにをみるか？
+          minLength: 1
+          type: string
+        uploader:
+          $ref: '#/components/schemas/LightAccountStruct'
+        views:
+          default: 0
+          description: 累計閲覧数
+          example: 0
+          format: int64
+          minimum: 0
+          type: integer
+      title: LightArtStruct
+      type: object
+      x-examples:
+        example:
+          artID: 1
+          artists:
+          - artistID: 1
+            name: 彩電
+          caption: Ｃ８９の新刊表紙となっていますっ
+          datetime: 2015-12-27T07:29:00Z
+          file:
+            ipfsHash:
+              orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+              thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+          likes: 0
+          mylisted: false
+          mylists: 0
+          nsfw: false
+          originService: Pixiv
+          originUrl: https://www.pixiv.net/artworks/54265978
+          page: 1
+          similarity: 0
+          title: 魔法少女は深淵になにをみるか？
+          uploader:
+            accountID: 1
+            name: お窓
+          views: 0
+    LightArtistStruct:
+      description: 絵師情報の簡易構造体(読み取り専用)
+      example:
+        name: 彩電
+        artistID: 1
+      properties:
+        artistID:
+          example: 1
+          type: integer
+        name:
+          example: 彩電
+          type: string
+      title: LightArtistStruct
+      type: object
+      x-examples:
+        example:
+          artistID: 1
+          name: 彩電
+    MuteStruct:
+      description: ミュート情報の構造体
+      example:
+        accountID: 1
+        muteID: 1
+        targetID: 1
+        targetType: tag
+      properties:
+        accountID:
+          description: 情報作成者のアカウントID
+          example: 1
+          minimum: 1
+          type: integer
+        muteID:
+          description: ミュートID
+          example: 1
+          minimum: 1
+          type: integer
+        targetID:
+          description: 対象のタグ/絵師ID
+          example: 1
+          minimum: 1
+          type: integer
+        targetType:
+          description: ミュート種別
+          enum:
+          - tag
+          - artist
+          example: tag
+          type: string
+      title: MuteStruct
+      type: object
+      x-examples:
+        example:
+          accountID: 1
+          muteID: 1
+          targetID: 1
+          targetType: tag
+    MylistStruct:
+      description: マイリスト情報の構造体
+      example:
+        owner:
+          accountID: 1
+          name: お窓
+        private: true
+        createdDate: 2021-03-14T02:16:03Z
+        name: お窓のマイリスト
+        description: ユーザーデフォルトマイリスト
+        updatedDate: 2021-03-14T02:16:03Z
+        arts:
+        - nsfw: false
+          caption: Ｃ８９の新刊表紙となっていますっ
+          mylists: 0
+          title: 魔法少女は深淵になにをみるか？
+          artID: 1
+          datetime: 2015-12-27T07:29:00Z
+          mylisted: false
+          file:
+            ipfsHash:
+              orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+              thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+          artists:
+          - name: 彩電
+            artistID: 1
+          - name: 彩電
+            artistID: 1
+          similarity: 0.08008281904610115
+          uploader:
+            accountID: 1
+            name: お窓
+          originUrl: https://www.pixiv.net/artworks/54265978
+          originService: Pixiv
+          page: 1
+          views: 0
+          likes: 0
+        - nsfw: false
+          caption: Ｃ８９の新刊表紙となっていますっ
+          mylists: 0
+          title: 魔法少女は深淵になにをみるか？
+          artID: 1
+          datetime: 2015-12-27T07:29:00Z
+          mylisted: false
+          file:
+            ipfsHash:
+              orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+              thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+          artists:
+          - name: 彩電
+            artistID: 1
+          - name: 彩電
+            artistID: 1
+          similarity: 0.08008281904610115
+          uploader:
+            accountID: 1
+            name: お窓
+          originUrl: https://www.pixiv.net/artworks/54265978
+          originService: Pixiv
+          page: 1
+          views: 0
+          likes: 0
+        mylistID: 1
+      properties:
+        arts:
+          description: イラストID一覧
+          items:
+            $ref: '#/components/schemas/LightArtStruct'
+          type: array
+        createdDate:
+          description: マイリスト作成日時
+          example: 2021-03-14T02:16:03Z
+          format: date-time
+          type: string
+        description:
+          description: マイリスト説明文
+          example: ユーザーデフォルトマイリスト
+          type: string
+        mylistID:
+          description: マイリストID
+          example: 1
+          minimum: 1
+          type: integer
+        name:
+          description: マイリスト名
+          example: お窓のマイリスト
+          minLength: 1
+          type: string
+        owner:
+          $ref: '#/components/schemas/LightAccountStruct'
+        private:
+          default: true
+          description: 公開/非公開
+          type: boolean
+        updatedDate:
+          description: マイリスト更新日時
+          example: 2021-03-14T02:16:03Z
+          format: date-time
+          type: string
+      title: MylistStruct
+      type: object
+      x-examples:
+        example:
+          arts:
+          - artID: 0
+            artists:
+            - artistID: 1
+              name: 彩電
+            caption: string
+            datetime: 2021-01-07 12:48:42
+            file:
+              ipfsHash:
+                orig: string
+                thumb: string
+            likes: 0
+            mylisted: true
+            mylists: 0
+            nsfw: true
+            originService: string
+            originUrl: string
+            page: 0
+            similarity: 0
+            title: string
+            uploader:
+              accountID: 1
+              name: お窓
+            views: 0
+          createdDate: 2021-03-14T02:16:03Z
+          description: ユーザーデフォルトマイリスト
+          mylistID: 1
+          name: お窓のマイリスト
+          owner:
+            accountID: 1
+            name: お窓
+          private: true
+          updatedDate: 2021-03-14T02:16:03Z
+    NotifyClientStruct:
+      description: 通知クライアント情報の構造体
+      example:
+        accountID: 1
+        level: 5
+        name: ChinoPhone
+        notifyClientID: 1
+        type: webpush
+      properties:
+        accountID:
+          description: 情報作成者のアカウントID
+          example: 1
+          minimum: 1
+          type: integer
+        level:
+          default: 5
+          description: 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
+          enum:
+          - 1
+          - 5
+          - 9
+          example: 5
+          format: int32
+          maximum: 9
+          minimum: 1
+          type: integer
+        name:
+          description: ユーザーが指定した通知クライアント名
+          example: ChinoPhone
+          maxLength: 30
+          minLength: 1
+          type: string
+        notifyClientID:
+          description: 通知クライアントID
+          example: 1
+          minimum: 1
+          type: integer
+        type:
+          default: webpush
+          description: クライアント種別
+          enum:
+          - webpush
+          - linenotify
+          example: webpush
+          maxLength: 20
+          minLength: 1
+          type: string
+      title: NotifyClientStruct
+      type: object
+      x-examples:
+        example:
+          accountID: 1
+          level: 5
+          name: ChinoPhone
+          notifyClientID: 1
+          type: webpush
+    NotifyConditionStruct:
+      description: 通知条件情報の構造体
+      example:
+        accountID: 1
+        targetID: 1
+        notifyConditionID: 1
+        targetMethod: all
+        targetClient: -1
+        targetType: tag
+      properties:
+        accountID:
+          description: 情報作成者のアカウントID
+          example: 1
+          minimum: 1
+          type: integer
+        notifyConditionID:
+          description: NotifyConditionID
+          example: 1
+          minimum: 1
+          type: integer
+        targetClient:
+          default: -1
+          description: 対象の通知クライアント(ターゲットが全てなら-1)
+          example: -1
+          format: int32
+          minimum: -1
+          type: integer
+        targetID:
+          default: 0
+          description: 条件ID 全通知なら0/タグID/絵師ID
+          example: 1
+          minimum: 0
+          type: integer
+        targetMethod:
+          default: all
+          description: 通知方法
+          enum:
+          - all
+          - webpush
+          - linenotify
+          example: all
+          maxLength: 30
+          minLength: 1
+          type: string
+        targetType:
+          default: tag
+          description: 条件種別
+          enum:
+          - all
+          - tag
+          - artist
+          example: tag
+          maxLength: 10
+          minLength: 1
+          type: string
+      title: NotifyConditionStruct
+      type: object
+      x-examples:
+        example:
+          accountID: 1
+          notifyConditionID: 1
+          targetClient: -1
+          targetID: 1
+          targetMethod: all
+          targetType: tag
     PaginationStruct:
+      description: ページネーション情報の構造体
       example:
         current: 1
         pages: 1
@@ -2381,28 +2425,6 @@ components:
         title: 香風智乃
         type: tag
       properties:
-        title:
-          description: ページネーションタイトル(表示用)
-          example: 香風智乃
-          minLength: 1
-          type: string
-        type:
-          default: tag
-          description: ページネーション種別(表示用)
-          enum:
-          - artist
-          - tag
-          - uploader
-          - notify-client
-          - notify-condition
-          - mute
-          - follow
-          - article
-          - mylist-list
-          - art
-          - upload-history
-          example: tag
-          type: string
         count:
           default: 0
           description: ヒット総数
@@ -2435,6 +2457,28 @@ components:
           maximum: 100
           minimum: 20
           type: integer
+        title:
+          description: ページネーションタイトル(表示用)
+          example: 香風智乃
+          minLength: 1
+          type: string
+        type:
+          default: tag
+          description: ページネーション種別(表示用)
+          enum:
+          - artist
+          - tag
+          - uploader
+          - notify-client
+          - notify-condition
+          - mute
+          - follow
+          - article
+          - mylist-list
+          - art
+          - upload-history
+          example: tag
+          type: string
       required:
       - count
       - current
@@ -2446,42 +2490,199 @@ components:
       type: object
       x-examples:
         example:
-          title: 香風智乃
-          type: tag
           count: 1
           current: 1
           pages: 1
           perPage: 20
+          title: 香風智乃
+          type: tag
+    PostLoginWithFormRequest:
+      description: ログインする際に利用される要求構造体
+      example:
+        password: password
+        id: id
+        totpCode: totpCode
+      properties:
+        id:
+          description: ログインID
+          minLength: 1
+          type: string
+        password:
+          description: ログインパスワード
+          minLength: 1
+          type: string
+        totpCode:
+          description: ログインTOTPトークン
+          type: string
+      required:
+      - id
+      - password
+      title: PostLoginWithFormRequest
+      type: object
+      x-examples:
+        admin:
+          id: omado
+          password: kafuuch1n0
+        user:
+          id: chino
+          password: h0t0c0c0a
+    PostLoginWithFormResponse:
+      description: ログインに成功した際に利用される応答構造体
+      example:
+        apiKey: apiKey
+      properties:
+        apiKey:
+          minLength: 1
+          type: string
+      title: PostLoginWithFormResponse
+      type: object
+      x-examples:
+        example:
+          apiKey: DUMMY_API_KEY
+    PostRegisterLineNotifyRequest:
+      description: LineNotifyのトークンを登録する際の要求構造体
+      example:
+        level: 5
+        name: 1対1で受け取る
+        token: DUMMY_LINE_NOTIFY_TOKEN_BEARER
+      properties:
+        level:
+          default: 5
+          description: 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
+          enum:
+          - 1
+          - 5
+          - 9
+          example: 5
+          format: int32
+          maximum: 9
+          minimum: 1
+          type: integer
+        name:
+          description: 通知クライアント名
+          example: 1対1で受け取る
+          type: string
+        token:
+          description: LineNotifyのパーソナルトークン
+          example: DUMMY_LINE_NOTIFY_TOKEN_BEARER
+          maxLength: 120
+          minLength: 30
+          type: string
+      required:
+      - level
+      - name
+      - token
+      title: PostRegisterLineNotifyRequest
+      type: object
+      x-examples:
+        example:
+          level: 5
+          name: 1対1で受け取る
+          token: DUMMY_LINE_NOTIFY_TOKEN_BEARER
+    PostRegisterWebPushRequest:
+      description: WebPushのトークンを登録する際の要求構造体
+      example:
+        endpoint: https://example.com/webpush/endpoint
+        auth: DUMMY_AUTH_TOKEN
+        level: 5
+        name: ChinoLaptop
+        p256dh: DUMMY_PUBLIC_KEY
+      properties:
+        auth:
+          description: WebPushの通知送信認証キー
+          example: DUMMY_AUTH_TOKEN
+          maxLength: 200
+          minLength: 10
+          type: string
+        endpoint:
+          description: WebPushのPOST先エンドポイント(ユーザー毎に異なる)
+          example: https://example.com/webpush/endpoint
+          format: uri-reference
+          maxLength: 200
+          minLength: 1
+          type: string
+        level:
+          default: 5
+          description: 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
+          enum:
+          - 1
+          - 5
+          - 9
+          example: 5
+          format: int32
+          maximum: 9
+          minimum: 1
+          type: integer
+        name:
+          description: 通知クライアント名
+          example: ChinoLaptop
+          maxLength: 30
+          minLength: 1
+          type: string
+        p256dh:
+          description: ブラウザ公開鍵
+          example: DUMMY_PUBLIC_KEY
+          maxLength: 200
+          minLength: 10
+          type: string
+      required:
+      - auth
+      - endpoint
+      - level
+      - name
+      - p256dh
+      title: PostRegisterWebPushRequest
+      type: object
+      x-examples:
+        example:
+          auth: DUMMY_AUTH_TOKEN
+          endpoint: https://example.com/webpush/endpoint
+          level: 5
+          name: ChinoLaptop
+          p256dh: DUMMY_PUBLIC_KEY
+    PostResetPasswordRequest:
+      description: パスワードをリセットする際に使う要求構造体
+      example:
+        mail: mail
+      properties:
+        mail:
+          description: メールアドレス(のみ)
+          type: string
+      title: PostResetPasswordRequest
+      type: object
+      x-examples:
+        admin:
+          mail: dsgamer777@gmail.com
     UploadHistoryStruct:
-      description: アップロード履歴
+      description: 投稿履歴の応答構造体
       example:
         accountID: 1
         artID: 1
         uploadID: 1
-        started: 2021-02-21 22:24:22
         finished: 2021-02-21 22:24:27
+        started: 2021-02-21 22:24:22
         status: 5
       properties:
-        uploadID:
-          description: 通し投稿履歴番号(インデックス用)
-          example: 1
-          format: int32
-          minimum: 1
-          type: integer
         accountID:
           description: 情報作成者のアカウントID
           example: 1
           minimum: 1
           type: integer
-        started:
-          description: データ登録処理開始時刻
-          example: 2021-02-21 22:24:22
-          maxLength: 19
-          minLength: 19
-          type: string
+        artID:
+          description: 投稿に成功した場合入るID
+          example: 1
+          format: int32
+          minimum: 1
+          type: integer
         finished:
           description: データ登録完了時刻
           example: 2021-02-21 22:24:27
+          maxLength: 19
+          minLength: 19
+          type: string
+        started:
+          description: データ登録処理開始時刻
+          example: 2021-02-21 22:24:22
           maxLength: 19
           minLength: 19
           type: string
@@ -2496,13 +2697,14 @@ components:
           maximum: 9
           minimum: 0
           type: integer
-        artID:
-          description: 投稿に成功した場合入るID
+        uploadID:
+          description: 通し投稿履歴番号(インデックス用)
           example: 1
           format: int32
           minimum: 1
           type: integer
       required:
+      - accountID
       - artID
       - finished
       - started
@@ -2512,168 +2714,25 @@ components:
       type: object
       x-examples:
         example:
-          uploadID: 12045
           accountID: 1
-          started: 2021-02-21 22:24:22
-          finished: 2021-02-21 22:24:27
-          status: 5
           artID: 9381
-    LightArtStruct:
-      description: 検索の応答モデル。配列で並んで返される。
-      example:
-        nsfw: false
-        caption: Ｃ８９の新刊表紙となっていますっ
-        title: 魔法少女は深淵になにをみるか？
-        mylists: 0
-        artID: 1
-        datetime: 2015-12-27T07:29:00Z
-        mylisted: false
-        file:
-          ipfsHash:
-            thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-            orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-        artists:
-        - name: 彩電
-          artistID: 1
-        - name: 彩電
-          artistID: 1
-        uploader:
-          accountID: 1
-          name: お窓
-        similarity: 0.08008281904610115
-        originUrl: https://www.pixiv.net/artworks/54265978
-        page: 1
-        originService: Pixiv
-        views: 0
-        likes: 0
-      properties:
-        artID:
-          description: イラストID
-          example: 1
-          minimum: 1
-          type: integer
-        title:
-          description: イラスト(作品)名
-          example: 魔法少女は深淵になにをみるか？
-          minLength: 1
-          type: string
-        caption:
-          description: |-
-            説明文
-            NOTE: 通常出典記載の説明文と同じ物が入る
-          example: Ｃ８９の新刊表紙となっていますっ
-          minLength: 1
-          type: string
-        datetime:
-          description: 登録日(%Y-%m-%d %H:%M:%S)
-          example: 2015-12-27T07:29:00Z
-          format: date-time
-          type: string
-        page:
-          default: 1
-          description: グループになっている場合のページ番号
-          example: 1
-          format: int32
-          minimum: 1
-          type: integer
-        likes:
-          default: 0
-          description: 累計いいね数
-          example: 0
-          format: int64
-          minimum: 0
-          type: integer
-        views:
-          default: 0
-          description: 累計閲覧数
-          example: 0
-          format: int64
-          minimum: 0
-          type: integer
-        mylists:
-          default: 0
-          description: マイリスト済みのユーザー数
-          example: 0
-          format: int64
-          minimum: 0
-          type: integer
-        mylisted:
-          default: false
-          description: リクエストしたユーザーがマイリストしているか
-          type: boolean
-        uploader:
-          $ref: '#/components/schemas/LightAccountStruct'
-        artists:
-          description: 絵師情報(複数可)
-          items:
-            $ref: '#/components/schemas/LightArtistStruct'
-          type: array
-        originUrl:
-          description: 出典URL
-          example: https://www.pixiv.net/artworks/54265978
-          format: uri-reference
-          minLength: 1
-          type: string
-        originService:
-          description: 出典のサービス名
-          example: Pixiv
-          minLength: 1
-          type: string
-        nsfw:
-          default: false
-          description: アダルトコンテンツか否か
-          type: boolean
-        file:
-          $ref: '#/components/schemas/LightArtStruct_file'
-        similarity:
-          description: 元画像との類似度(画像検索のみ)
-          maximum: 1
-          minimum: 0
-          type: number
-      title: LightArtStruct
-      type: object
-      x-examples:
-        example:
-          artID: 1
-          title: 魔法少女は深淵になにをみるか？
-          caption: Ｃ８９の新刊表紙となっていますっ
-          datetime: 2015-12-27T07:29:00Z
-          page: 1
-          likes: 0
-          views: 0
-          mylists: 0
-          mylisted: false
-          uploader:
-            accountID: 1
-            name: お窓
-          artists:
-          - artistID: 1
-            name: 彩電
-          originUrl: https://www.pixiv.net/artworks/54265978
-          originService: Pixiv
-          nsfw: false
-          file:
-            ipfsHash:
-              thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-              orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
-          similarity: 0
+          finished: 2021-02-21 22:24:27
+          started: 2021-02-21 22:24:22
+          status: 5
+          uploadID: 12045
     AccountStruct_access:
       description: 管理者権限とは別の細かな権限
       example:
-        canCreatePost: true
         canApprovePost: false
+        canCreatePost: true
         canInvite: true
         canLike: true
         canEditPost: false
         canComment: true
       properties:
-        canInvite:
-          default: true
-          description: 招待できるか
-          type: boolean
-        canLike:
-          default: true
-          description: いいねできるか
+        canApprovePost:
+          default: false
+          description: 投稿を承認できるか
           type: boolean
         canComment:
           default: true
@@ -2687,9 +2746,13 @@ components:
           default: false
           description: 投稿を編集できるか
           type: boolean
-        canApprovePost:
-          default: false
-          description: 投稿を承認できるか
+        canInvite:
+          default: true
+          description: 招待できるか
+          type: boolean
+        canLike:
+          default: true
+          description: いいねできるか
           type: boolean
       type: object
     AccountStruct_invite:
@@ -2699,22 +2762,54 @@ components:
         code: USAGIDEV
         inviteID: 1
       properties:
-        inviteID:
-          description: 招待通し番号
-          example: 1
-          type: integer
         code:
           description: 招待コード(shortuuid)
           example: USAGIDEV
           maxLength: 12
           minLength: 6
           type: string
+        inviteID:
+          description: 招待通し番号
+          example: 1
+          type: integer
         invitedCount:
           default: 0
           description: 招待した人数の累計(誰を招待したかは表示されない)
           example: 0
           minimum: 0
           type: integer
+      type: object
+    AccountStruct_ipfs:
+      description: IPFS設定
+      example:
+        pinEnabled: false
+        gatewayUrl: https://cloudflare-ipfs.com
+        nodeEnabled: false
+        nodeUrl: nodeUrl
+        gatewayEnabled: false
+      properties:
+        gatewayEnabled:
+          default: false
+          description: IPFSゲートウェイを使用するか否か
+          type: boolean
+        gatewayUrl:
+          default: https://cloudflare-ipfs.com
+          description: 使用する任意のゲートウェイアドレス
+          example: https://cloudflare-ipfs.com
+          format: uri-reference
+          type: string
+        nodeEnabled:
+          default: false
+          description: IPFSノードを使用するか否か
+          type: boolean
+        nodeUrl:
+          description: 使用する任意のノードアドレス
+          format: uri-reference
+          type: string
+        pinEnabled:
+          default: false
+          description: マイリストを自動Pinningするか
+          type: boolean
       type: object
     AccountStruct_notify:
       description: 通知クライアントを設定済みか
@@ -2729,51 +2824,19 @@ components:
           default: false
           type: boolean
       type: object
-    AccountStruct_ipfs:
-      description: IPFS設定
-      example:
-        pinEnabled: false
-        gatewayUrl: https://cloudflare-ipfs.com
-        nodeEnabled: false
-        nodeUrl: nodeUrl
-        gatewayEnabled: false
-      properties:
-        gatewayUrl:
-          default: https://cloudflare-ipfs.com
-          description: 使用する任意のゲートウェイアドレス
-          example: https://cloudflare-ipfs.com
-          format: uri-reference
-          type: string
-        nodeUrl:
-          description: 使用する任意のノードアドレス
-          format: uri-reference
-          type: string
-        gatewayEnabled:
-          default: false
-          description: IPFSゲートウェイを使用するか否か
-          type: boolean
-        nodeEnabled:
-          default: false
-          description: IPFSノードを使用するか否か
-          type: boolean
-        pinEnabled:
-          default: false
-          description: マイリストを自動Pinningするか
-          type: boolean
-      type: object
     LightArtStruct_file_ipfsHash:
       description: IPFSのハッシュ情報
       example:
-        thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
         orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+        thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
       properties:
-        thumb:
-          description: サムネイルハッシュ
+        orig:
+          description: Raw画像ハッシュ
           example: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
           maxLength: 100
           type: string
-        orig:
-          description: Raw画像ハッシュ
+        thumb:
+          description: サムネイルハッシュ
           example: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
           maxLength: 100
           type: string
@@ -2781,8 +2844,8 @@ components:
     LightArtStruct_file:
       example:
         ipfsHash:
-          thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
           orig: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
+          thumb: QmYQvXHGoiTdJuFLQWXQpMBz9V4254gNixLjPjMB2T4g5Y
       properties:
         ipfsHash:
           $ref: '#/components/schemas/LightArtStruct_file_ipfsHash'

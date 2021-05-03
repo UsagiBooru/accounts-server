@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,14 +10,15 @@
 
 package gen
 
+// PostRegisterLineNotifyRequest - LineNotifyのトークンを登録する際の要求構造体
 type PostRegisterLineNotifyRequest struct {
 
-	// LineNotifyのパーソナルトークン
-	Token string `json:"token"`
+	// 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
+	Level int32 `json:"level"`
 
 	// 通知クライアント名
 	Name string `json:"name"`
 
-	// 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
-	Level int32 `json:"level"`
+	// LineNotifyのパーソナルトークン
+	Token string `json:"token"`
 }

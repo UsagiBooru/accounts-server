@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,20 +10,21 @@
 
 package gen
 
+// NotifyClientStruct - 通知クライアント情報の構造体
 type NotifyClientStruct struct {
-
-	// 通知クライアントID
-	NotifyClientID int32 `json:"notifyClientID,omitempty"`
 
 	// 情報作成者のアカウントID
 	AccountID int32 `json:"accountID,omitempty"`
 
+	// 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
+	Level int32 `json:"level,omitempty"`
+
 	// ユーザーが指定した通知クライアント名
 	Name string `json:"name,omitempty"`
 
+	// 通知クライアントID
+	NotifyClientID int32 `json:"notifyClientID,omitempty"`
+
 	// クライアント種別
 	Type string `json:"type,omitempty"`
-
-	// 通知レベル 1:緊急時のみ 5:タグ絵師通知のみ 9:すべて
-	Level int32 `json:"level,omitempty"`
 }

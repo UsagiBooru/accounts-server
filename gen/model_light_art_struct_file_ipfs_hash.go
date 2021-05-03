@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -13,9 +13,9 @@ package gen
 // LightArtStructFileIpfsHash - IPFSのハッシュ情報
 type LightArtStructFileIpfsHash struct {
 
-	// サムネイルハッシュ
-	Thumb string `json:"thumb,omitempty"`
-
 	// Raw画像ハッシュ
 	Orig string `json:"orig,omitempty"`
+
+	// サムネイルハッシュ
+	Thumb string `json:"thumb,omitempty"`
 }

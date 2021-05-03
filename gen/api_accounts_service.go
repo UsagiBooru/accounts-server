@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -129,5 +129,19 @@ func (s *AccountsApiService) LoginWithForm(ctx context.Context, postLoginWithFor
 	//return Response(400, GeneralMessageResponse{}), nil
 
 	return Response(http.StatusNotImplemented, nil), errors.New("LoginWithForm method not implemented")
+}
+
+// ReissuePassword - Reset password
+func (s *AccountsApiService) ReissuePassword(ctx context.Context, postResetPasswordRequest PostResetPasswordRequest) (ImplResponse, error) {
+	// TODO - update ReissuePassword with the required logic for this service method.
+	// Add api_accounts_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+
+	//TODO: Uncomment the next line to return response Response(200, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(200, GeneralMessageResponse{}), nil
+
+	//TODO: Uncomment the next line to return response Response(400, GeneralMessageResponse{}) or use other options such as http.Ok ...
+	//return Response(400, GeneralMessageResponse{}), nil
+
+	return Response(http.StatusNotImplemented, nil), errors.New("ReissuePassword method not implemented")
 }
 

@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,10 +10,11 @@
 
 package gen
 
+// GetUploadHistoryResponse - 投稿履歴情報一覧の応答構造体
 type GetUploadHistoryResponse struct {
-
-	Pagination PaginationStruct `json:"pagination,omitempty"`
 
 	// 指定された範囲で一致するデータ 一致するものがなければ空配列
 	Contents []UploadHistoryStruct `json:"contents,omitempty"`
+
+	Pagination PaginationStruct `json:"pagination,omitempty"`
 }

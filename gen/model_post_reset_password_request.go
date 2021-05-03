@@ -10,8 +10,9 @@
 
 package gen
 
-// GetNotifyClientsResponse - 通知クライアント情報一覧の応答構造体
-type GetNotifyClientsResponse struct {
+// PostResetPasswordRequest - パスワードをリセットする際に使う要求構造体
+type PostResetPasswordRequest struct {
 
-	Clients []NotifyClientStruct `json:"clients,omitempty"`
+	// メールアドレス(のみ)
+	Mail string `json:"mail,omitempty"`
 }

@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,9 +10,10 @@
 
 package gen
 
+// GetTimelineFollowingResponse - タイムラインのフォロー一覧の応答構造体
 type GetTimelineFollowingResponse struct {
 
-	Pagination PaginationStruct `json:"pagination,omitempty"`
-
 	Follows []LightArtistStruct `json:"follows,omitempty"`
+
+	Pagination PaginationStruct `json:"pagination,omitempty"`
 }

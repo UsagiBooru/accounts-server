@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -13,11 +13,8 @@ package gen
 // AccountStructAccess - 管理者権限とは別の細かな権限
 type AccountStructAccess struct {
 
-	// 招待できるか
-	CanInvite bool `json:"canInvite,omitempty"`
-
-	// いいねできるか
-	CanLike bool `json:"canLike,omitempty"`
+	// 投稿を承認できるか
+	CanApprovePost bool `json:"canApprovePost,omitempty"`
 
 	// コメントできるか
 	CanComment bool `json:"canComment,omitempty"`
@@ -28,6 +25,9 @@ type AccountStructAccess struct {
 	// 投稿を編集できるか
 	CanEditPost bool `json:"canEditPost,omitempty"`
 
-	// 投稿を承認できるか
-	CanApprovePost bool `json:"canApprovePost,omitempty"`
+	// 招待できるか
+	CanInvite bool `json:"canInvite,omitempty"`
+
+	// いいねできるか
+	CanLike bool `json:"canLike,omitempty"`
 }

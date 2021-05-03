@@ -41,5 +41,6 @@ go/model_post_login_with_form_request.go
 go/model_post_login_with_form_response.go
 go/model_post_register_line_notify_request.go
 go/model_post_register_web_push_request.go
+go/model_post_reset_password_request.go
 go/model_upload_history_struct.go
 go/routers.go

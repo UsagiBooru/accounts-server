@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,11 +10,12 @@
 
 package gen
 
+// GetMutesResponse - ミュート情報一覧の応答構造体
 type GetMutesResponse struct {
-
-	// ミュート中のタグID配列
-	Tags []MuteStruct `json:"tags"`
 
 	// ミュート中の絵師ID配列
 	Artists []MuteStruct `json:"artists"`
+
+	// ミュート中のタグID配列
+	Tags []MuteStruct `json:"tags"`
 }

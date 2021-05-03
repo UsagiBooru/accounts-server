@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -28,6 +28,7 @@ type AccountsApiRouter interface {
 	GetAccountMe(http.ResponseWriter, *http.Request)
 	GetUploadHistory(http.ResponseWriter, *http.Request)
 	LoginWithForm(http.ResponseWriter, *http.Request)
+	ReissuePassword(http.ResponseWriter, *http.Request)
 }
 // MutesApiRouter defines the required methods for binding the api requests to a responses for the MutesApi
 // The MutesApiRouter implementation should parse necessary information from the http request, 
@@ -83,6 +84,7 @@ type AccountsApiServicer interface {
 	GetAccountMe(context.Context) (ImplResponse, error)
 	GetUploadHistory(context.Context, int32, int32, string, string, int32) (ImplResponse, error)
 	LoginWithForm(context.Context, PostLoginWithFormRequest) (ImplResponse, error)
+	ReissuePassword(context.Context, PostResetPasswordRequest) (ImplResponse, error)
 }
 
 

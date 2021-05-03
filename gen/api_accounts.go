@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -72,6 +72,12 @@ func (c *AccountsApiController) Routes() Routes {
 			strings.ToUpper("Post"),
 			"/accounts/login/form",
 			c.LoginWithForm,
+		},
+		{
+			"ReissuePassword",
+			strings.ToUpper("Post"),
+			"/accounts/login/reset_password",
+			c.ReissuePassword,
 		},
 	}
 }
@@ -219,6 +225,25 @@ func (c *AccountsApiController) LoginWithForm(w http.ResponseWriter, r *http.Req
 	}
 
 	result, err := c.service.LoginWithForm(r.Context(), *postLoginWithFormRequest)
+	//If an error occured, encode the error with the status code
+	if err != nil {
+		EncodeJSONResponse(err.Error(), &result.Code, w)
+		return
+	}
+	//If no error, encode the body and the result code
+	EncodeJSONResponse(result.Body, &result.Code, w)
+
+}
+
+// ReissuePassword - Reset password
+func (c *AccountsApiController) ReissuePassword(w http.ResponseWriter, r *http.Request) {
+	postResetPasswordRequest := &PostResetPasswordRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&postResetPasswordRequest); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	result, err := c.service.ReissuePassword(r.Context(), *postResetPasswordRequest)
 	//If an error occured, encode the error with the status code
 	if err != nil {
 		EncodeJSONResponse(err.Error(), &result.Code, w)

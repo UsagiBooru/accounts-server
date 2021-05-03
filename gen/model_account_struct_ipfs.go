@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -13,17 +13,17 @@ package gen
 // AccountStructIpfs - IPFS設定
 type AccountStructIpfs struct {
 
-	// 使用する任意のゲートウェイアドレス
-	GatewayUrl string `json:"gatewayUrl,omitempty"`
-
-	// 使用する任意のノードアドレス
-	NodeUrl string `json:"nodeUrl,omitempty"`
-
 	// IPFSゲートウェイを使用するか否か
 	GatewayEnabled bool `json:"gatewayEnabled,omitempty"`
 
+	// 使用する任意のゲートウェイアドレス
+	GatewayUrl string `json:"gatewayUrl,omitempty"`
+
 	// IPFSノードを使用するか否か
 	NodeEnabled bool `json:"nodeEnabled,omitempty"`
+
+	// 使用する任意のノードアドレス
+	NodeUrl string `json:"nodeUrl,omitempty"`
 
 	// マイリストを自動Pinningするか
 	PinEnabled bool `json:"pinEnabled,omitempty"`

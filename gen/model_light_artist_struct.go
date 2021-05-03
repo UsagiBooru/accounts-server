@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,6 +10,7 @@
 
 package gen
 
+// LightArtistStruct - 絵師情報の簡易構造体(読み取り専用)
 type LightArtistStruct struct {
 
 	ArtistID int32 `json:"artistID,omitempty"`

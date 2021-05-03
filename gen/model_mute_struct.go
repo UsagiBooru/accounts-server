@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,17 +10,18 @@
 
 package gen
 
+// MuteStruct - ミュート情報の構造体
 type MuteStruct struct {
-
-	// ミュートID
-	MuteID int32 `json:"muteID,omitempty"`
 
 	// 情報作成者のアカウントID
 	AccountID int32 `json:"accountID,omitempty"`
 
-	// ミュート種別
-	TargetType string `json:"targetType,omitempty"`
+	// ミュートID
+	MuteID int32 `json:"muteID,omitempty"`
 
 	// 対象のタグ/絵師ID
 	TargetID int32 `json:"targetID,omitempty"`
+
+	// ミュート種別
+	TargetType string `json:"targetType,omitempty"`
 }

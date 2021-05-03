@@ -25,11 +25,11 @@ type MongoAccountStructNotify struct {
 // MongoAccountStructInvite - 招待情報
 type MongoAccountStructInvite struct {
 
-	// 招待通し番号
-	InviteID int32 `bson:"inviteID,omitempty" validate:"omitempty,gte=0"`
-
 	// 招待コード(shortuuid)
 	Code string `bson:"code,omitempty" validate:"omitempty,alphanum,min=4,max=12"`
+
+	// 招待通し番号
+	InviteID int32 `bson:"inviteID,omitempty" validate:"omitempty,gte=0"`
 
 	// 招待した人数の累計(誰を招待したかは表示されない)
 	InvitedCount int32 `bson:"invitedCount,omitempty" validate:"omitempty,gte=0"`
@@ -38,11 +38,8 @@ type MongoAccountStructInvite struct {
 // MongoAccountStructAccess - 管理者権限とは別の細かな権限
 type MongoAccountStructAccess struct {
 
-	// 招待できるか
-	CanInvite bool `bson:"canInvite,omitempty"`
-
-	// いいねできるか
-	CanLike bool `bson:"canLike,omitempty"`
+	// 投稿を承認できるか
+	CanApprovePost bool `bson:"canApprovePost,omitempty"`
 
 	// コメントできるか
 	CanComment bool `bson:"canComment,omitempty"`
@@ -53,24 +50,27 @@ type MongoAccountStructAccess struct {
 	// 投稿を編集できるか
 	CanEditPost bool `bson:"canEditPost,omitempty"`
 
-	// 投稿を承認できるか
-	CanApprovePost bool `bson:"canApprovePost,omitempty"`
+	// 招待できるか
+	CanInvite bool `bson:"canInvite,omitempty"`
+
+	// いいねできるか
+	CanLike bool `bson:"canLike,omitempty"`
 }
 
 // MongoAccountStructIpfs - IPFS設定
 type MongoAccountStructIpfs struct {
 
-	// 使用する任意のゲートウェイアドレス
-	GatewayUrl string `bson:"gatewayUrl,omitempty" validate:"omitempty,url,max=100"`
-
-	// 使用する任意のノードアドレス
-	NodeUrl string `bson:"nodeUrl,omitempty" validate:"omitempty,url,max=100"`
-
 	// IPFSゲートウェイを使用するか否か
 	GatewayEnabled bool `bson:"gatewayEnabled,omitempty"`
 
+	// 使用する任意のゲートウェイアドレス
+	GatewayUrl string `bson:"gatewayUrl,omitempty" validate:"omitempty,url,max=100"`
+
 	// IPFSノードを使用するか否か
 	NodeEnabled bool `bson:"nodeEnabled,omitempty"`
+
+	// 使用する任意のノードアドレス
+	NodeUrl string `bson:"nodeUrl,omitempty" validate:"omitempty,url,max=100"`
 
 	// マイリストを自動Pinningするか
 	PinEnabled bool `bson:"pinEnabled,omitempty"`

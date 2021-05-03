@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,6 +10,7 @@
 
 package gen
 
+// PostLoginWithFormResponse - ログインに成功した際に利用される応答構造体
 type PostLoginWithFormResponse struct {
 
 	ApiKey string `json:"apiKey,omitempty"`

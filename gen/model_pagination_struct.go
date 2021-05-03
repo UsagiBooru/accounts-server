@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,13 +10,8 @@
 
 package gen
 
+// PaginationStruct - ページネーション情報の構造体
 type PaginationStruct struct {
-
-	// ページネーションタイトル(表示用)
-	Title string `json:"title"`
-
-	// ページネーション種別(表示用)
-	Type string `json:"type"`
 
 	// ヒット総数
 	Count int32 `json:"count"`
@@ -29,4 +24,10 @@ type PaginationStruct struct {
 
 	// ページ毎の取得数
 	PerPage int32 `json:"perPage"`
+
+	// ページネーションタイトル(表示用)
+	Title string `json:"title"`
+
+	// ページネーション種別(表示用)
+	Type string `json:"type"`
 }

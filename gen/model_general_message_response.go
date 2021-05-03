@@ -1,7 +1,7 @@
 /*
  * UsagiBooru Accounts API
  *
- * アカウント関連API
+ * Accounts related api (required)
  *
  * API version: 2.0
  * Contact: dsgamer777@gmail.com
@@ -10,6 +10,7 @@
 
 package gen
 
+// GeneralMessageResponse - 共通の応答構造体(404/401/400等を返す際に使用)
 type GeneralMessageResponse struct {
 
 	// 応答メッセージ(何が間違っているかの詳細)
