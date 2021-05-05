@@ -32,9 +32,10 @@ func (h *MongoMuteHelper) ToMongo(mt gen.MuteStruct) *MongoMuteStruct {
 }
 
 // CreateMute inserts specified mute to database
-func (h *MongoMuteHelper) CreateMute(muteID int32, targetType string, targetID int32) (*MongoMuteStruct, error) {
+func (h *MongoMuteHelper) CreateMute(muteID int32, accountID AccountID, targetType string, targetID int32) (*MongoMuteStruct, error) {
 	newMute := MongoMuteStruct{
 		ID:         primitive.NewObjectID(),
+		AccountID:  accountID,
 		MuteID:     muteID,
 		TargetType: targetType,
 		TargetID:   targetID,
@@ -72,12 +73,13 @@ func (h *MongoMuteHelper) FindDuplicatedMute(targetType string, targetID int32, 
 }
 
 // DeleteMute deletes specified mute from database
-func (h *MongoMuteHelper) DeleteMute(muteID int32) error {
+func (h *MongoMuteHelper) DeleteMute(muteID int32, accountID AccountID) error {
 	filter := bson.M{
-		"muteID": muteID,
+		"accountID": accountID,
+		"muteID":    muteID,
 	}
-	if _, err := h.col.DeleteOne(context.Background(), filter); err != nil {
-		return errors.New("delete Mute failed")
+	if res, _ := h.col.DeleteOne(context.Background(), filter); res.DeletedCount != 1 {
+		return errors.New("specified mute was not found")
 	}
 	return nil
 }

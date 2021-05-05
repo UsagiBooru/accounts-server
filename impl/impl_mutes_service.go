@@ -45,16 +45,12 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 	if err != nil {
 		return response.NewInternalError(), err
 	}
-	// Validate request
-	if err := request.ValidateRequiredFields(muteStruct, []string{"targetType", "targetID"}); err != nil {
-		return response.NewRequestErrorWithMessage(err.Error()), err
-	}
 	// Validate permission
 	if err := request.ValidatePermission(issuerPermission, issuerID, accountID); err != nil {
 		return response.NewPermissionErrorWithMessage(err.Error()), err
 	}
 	// Find target account
-	_, err = s.ah.FindAccount(mongomodels.AccountID(issuerID))
+	_, err = s.ah.FindAccount(mongomodels.AccountID(accountID))
 	if err != nil {
 		return response.NewNotFoundErrorWithMessage("specified account was not found"), nil
 	}
@@ -79,6 +75,7 @@ func (s *MutesApiImplService) AddMute(ctx context.Context, accountID int32, mute
 		// Create new mute
 		newMute, err = s.mh.CreateMute(
 			seq+1,
+			mongomodels.AccountID(accountID),
 			muteStruct.TargetType,
 			muteStruct.TargetID,
 		)
@@ -108,7 +105,7 @@ func (s *MutesApiImplService) DeleteMute(ctx context.Context, accountID int32, m
 		return response.NewPermissionErrorWithMessage(err.Error()), err
 	}
 	// Delete mute
-	err = s.mh.DeleteMute(muteID)
+	err = s.mh.DeleteMute(muteID, mongomodels.AccountID(accountID))
 	if err != nil {
 		return response.NewNotFoundError(), nil
 	}
