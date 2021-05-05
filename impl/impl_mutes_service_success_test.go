@@ -23,22 +23,7 @@ func GetMutesServer() (*httptest.Server, func(), bool) {
 	return httptest.NewServer(router), shutdown, isParallel
 }
 
-func TestGetMuteSuccess(t *testing.T) {
-	s, shutdown, isParallel := GetMutesServer()
-	if isParallel {
-		t.Parallel()
-	}
-	defer s.Close()
-	defer shutdown()
-	req := httptest.NewRequest(http.MethodGet, "/accounts/1/mutes/1", nil)
-	req = tests.SetAdminUserHeader(req)
-	rec := httptest.NewRecorder()
-	s.Config.Handler.ServeHTTP(rec, req)
-	t.Log(rec.Body)
-	assert.Equal(t, http.StatusOK, rec.Code)
-}
-
-func TestCreateMuteSuccess(t *testing.T) {
+func TestAddMuteSuccess(t *testing.T) {
 	s, shutdown, isParallel := GetMutesServer()
 	if isParallel {
 		t.Parallel()
@@ -80,4 +65,19 @@ func TestDeleteMuteSuccess(t *testing.T) {
 	s.Config.Handler.ServeHTTP(rec, req)
 	t.Log(rec.Body)
 	assert.Equal(t, http.StatusNoContent, rec.Code)
+}
+
+func TestGetMuteSuccess(t *testing.T) {
+	s, shutdown, isParallel := GetMutesServer()
+	if isParallel {
+		t.Parallel()
+	}
+	defer s.Close()
+	defer shutdown()
+	req := httptest.NewRequest(http.MethodGet, "/accounts/1/mutes/1", nil)
+	req = tests.SetAdminUserHeader(req)
+	rec := httptest.NewRecorder()
+	s.Config.Handler.ServeHTTP(rec, req)
+	t.Log(rec.Body)
+	assert.Equal(t, http.StatusOK, rec.Code)
 }
